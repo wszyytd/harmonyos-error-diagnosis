@@ -2,6 +2,8 @@ import appLimitsTest from './unit/AppLimits.test';
 import diagnosisModelsTest from './unit/DiagnosisModels.test';
 import diagnosisRuleResourceLoaderTest from './unit/DiagnosisRuleResourceLoader.test';
 import diagnosisRuleResourceTest from './unit/DiagnosisRuleResource.test';
+import databaseConstantsTest from './unit/DatabaseConstants.test';
+import databaseManagerTest from './unit/DatabaseManager.test';
 import errorCodesTest from './unit/ErrorCodes.test';
 import hiLogServiceTest from './unit/HiLogService.test';
 import httpStatusResourceTest from './unit/HttpStatusResource.test';
@@ -19,6 +21,8 @@ export default function testsuite() {
   diagnosisModelsTest();
   diagnosisRuleResourceLoaderTest();
   diagnosisRuleResourceTest();
+  databaseConstantsTest();
+  databaseManagerTest();
   errorCodesTest();
   hiLogServiceTest();
   httpStatusResourceTest();
