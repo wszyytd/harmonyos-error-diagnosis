@@ -1,0 +1,51 @@
+[2026-07-13T11:15:27.892] [INFO] [30260] - hpauditor scanning start
+
+[2026-07-13T11:15:27.896] [INFO] [30260] - OS Type: Windows_NT
+
+[2026-07-13T11:15:27.901] [INFO] [30260] - parsed code linter config: {"files":["**/*.ets"],"ignore":[]}
+
+[2026-07-13T11:15:27.903] [ERROR] [30260] - [dslrules] No valid rules loaded.
+
+[2026-07-13T11:15:27.904] [INFO] [30260] - code-linter.json5 没有匹配规则，执行完毕
+
+[2026-07-13T11:15:27.904] [INFO] [30260] - -Defects:0;Errors:0 Warns:0;Infos:0;
+
+
+[2026-07-13T11:15:27.905] [INFO] [30260] - hpauditor completed, exitCode:0
+
+[2026-07-13T11:15:27.905] [INFO] [30260] - hpauditor took: 0.025 s
+
+[2026-07-13T11:15:52.496] [INFO] [26932] - hpauditor scanning start
+
+[2026-07-13T11:15:52.498] [INFO] [26932] - OS Type: Windows_NT
+
+[2026-07-13T11:15:52.503] [INFO] [26932] - parsed code linter config: {"files":["**/*.ets"],"ignore":[]}
+
+[2026-07-13T11:15:52.504] [ERROR] [26932] - [dslrules] No valid rules loaded.
+
+[2026-07-13T11:15:52.505] [INFO] [26932] - code-linter.json5 没有匹配规则，执行完毕
+
+[2026-07-13T11:15:52.505] [INFO] [26932] - -Defects:0;Errors:0 Warns:0;Infos:0;
+
+
+[2026-07-13T11:15:52.506] [INFO] [26932] - hpauditor completed, exitCode:0
+
+[2026-07-13T11:15:52.506] [INFO] [26932] - hpauditor took: 0.02 s
+
+[2026-07-13T11:16:06.013] [INFO] [23228] - hpauditor scanning start
+
+[2026-07-13T11:16:06.016] [INFO] [23228] - OS Type: Windows_NT
+
+[2026-07-13T11:16:06.023] [INFO] [23228] - parsed code linter config: {"files":["**/*.ets"],"ignore":[]}
+
+[2026-07-13T11:16:06.025] [ERROR] [23228] - [dslrules] No valid rules loaded.
+
+[2026-07-13T11:16:06.026] [INFO] [23228] - code-linter.json5 没有匹配规则，执行完毕
+
+[2026-07-13T11:16:06.027] [INFO] [23228] - -Defects:0;Errors:0 Warns:0;Infos:0;
+
+
+[2026-07-13T11:16:06.027] [INFO] [23228] - hpauditor completed, exitCode:0
+
+[2026-07-13T11:16:06.028] [INFO] [23228] - hpauditor took: 0.025 s
+

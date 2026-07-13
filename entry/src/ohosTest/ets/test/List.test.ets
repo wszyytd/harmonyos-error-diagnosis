@@ -1,5 +1,5 @@
-import abilityTest from './Ability.test';
+import homePageSmokeTest from './pages/HomePageSmoke.test';
 
 export default function testsuite() {
-  abilityTest();
+  homePageSmokeTest();
 }

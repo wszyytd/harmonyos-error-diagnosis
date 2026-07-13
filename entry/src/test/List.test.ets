@@ -1,5 +1,5 @@
-import localUnitTest from './LocalUnit.test';
+import testFixtureTest from './unit/TestFixture.test';
 
 export default function testsuite() {
-  localUnitTest();
+  testFixtureTest();
 }

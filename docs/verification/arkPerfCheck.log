@@ -1,0 +1,12 @@
+[2026-07-13T11:16:06.392] [INFO] [28676] [HomeCheck] - [GenerateConfig] options: {"projectPath":"D:\\Work\\Code\\harmonyos-error-diagnosis","logPath":"D:\\Work\\Code\\harmonyos-error-diagnosis\\docs\\verification\\arkPerfCheck.log","sdkPath":{"sdkJsPath":"D:\\Dev\\IDE\\DevEco Studio\\sdk\\default\\openharmony\\ets","sdkHmsCorePath":"D:\\Dev\\IDE\\DevEco Studio\\sdk\\default\\hms\\ets"},"sdkRootPath":"D:\\Dev\\IDE\\DevEco Studio\\sdk","projectName":"harmonyos-error-diagnosis","arkCheckPath":"D:\\Dev\\IDE\\DevEco Studio\\plugins\\codelinter\\arkPerfCheck","sdkVersion":26,"inIde":"false","configPath":"D:\\Work\\Code\\harmonyos-error-diagnosis\\docs\\verification\\T2-code-linter.tmp.json5","language":"cn"}
+[2026-07-13T11:16:06.400] [INFO] [28676] [HomeCheck] - [Utils] os type: Windows_NT
+[2026-07-13T11:16:06.404] [INFO] [28676] [HomeCheck] - [Run] {"projectName":"harmonyos-error-diagnosis","projectPath":"D:\\Work\\Code\\harmonyos-error-diagnosis","logPath":"D:\\Work\\Code\\harmonyos-error-diagnosis\\docs\\verification\\arkPerfCheck.log","ohosSdkPath":"D:\\Dev\\IDE\\DevEco Studio\\sdk\\default\\openharmony\\ets","hmsSdkPath":"D:\\Dev\\IDE\\DevEco Studio\\sdk\\default\\hms\\ets","checkPath":"C:\\Users\\issun\\AppData\\Local\\Temp\\1783912565415_check_file ","apiVersion":26,"fix":"false","fixSelected":false,"npmPath":"npm","npmInstallDir":"C:\\Users\\issun\\AppData\\Local\\Temp\\homeCheck","reportDir":"./","sdksThirdParty":[],"arkCheckPath":"D:\\Dev\\IDE\\DevEco Studio\\plugins\\codelinter\\arkPerfCheck","product":"","homecheck_log_level":"info","arkanalyzer_log_level":"error","checkProject":"false","language":"cn","hasGetNetworkInfoPermission":"false"}
+[2026-07-13T11:16:06.411] [INFO] [28676] [HomeCheck] - [CheckEntry] File count: 3
+[2026-07-13T11:16:06.413] [INFO] [28676] [HomeCheck] - [CheckEntry] Build sceneConfig completed.
+[2026-07-13T11:16:13.377] [INFO] [28676] [HomeCheck] - [CheckEntry] Build scene completed.
+[2026-07-13T11:16:13.389] [INFO] [28676] [HomeCheck] - [CheckEntry] Infer types completed.
+[2026-07-13T11:16:13.394] [INFO] [28676] [HomeCheck] - [CheckEntry] Build scope completed.
+[2026-07-13T11:16:13.395] [INFO] [28676] [HomeCheck] - [ConfigUtils] The npmPath:npm
+[2026-07-13T11:16:13.396] [INFO] [28676] [HomeCheck] - [ConfigUtils] The npmInstallDir:C:\Users\issun\AppData\Local\Temp\homeCheck
+[2026-07-13T11:16:13.406] [INFO] [28676] [HomeCheck] - [Main] Checking completed.
+[2026-07-13T11:16:13.407] [INFO] [28676] [HomeCheck] - [Run] HomeCheck took: 7.021 s.
