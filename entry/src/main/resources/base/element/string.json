@@ -83,6 +83,22 @@
     {
       "name": "route_unknown_message",
       "value": "请安全返回首页"
+    },
+    {
+      "name": "theme_verify_light",
+      "value": "验证浅色主题"
+    },
+    {
+      "name": "theme_verify_dark",
+      "value": "验证深色主题"
+    },
+    {
+      "name": "theme_verify_system",
+      "value": "验证跟随系统"
+    },
+    {
+      "name": "theme_session_only",
+      "value": "主题仅在本次会话生效，保存失败后可重试"
     }
   ]
 }

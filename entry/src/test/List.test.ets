@@ -1,4 +1,5 @@
 import appLimitsTest from './unit/AppLimits.test';
+import appStateStoreTest from './unit/AppStateStore.test';
 import appRouterTest from './unit/AppRouter.test';
 import diagnosisModelsTest from './unit/DiagnosisModels.test';
 import diagnosisRuleResourceLoaderTest from './unit/DiagnosisRuleResourceLoader.test';
@@ -18,11 +19,13 @@ import reportStoreTest from './unit/ReportStore.test';
 import resultModelsTest from './unit/ResultModels.test';
 import settingsModelsTest from './unit/SettingsModels.test';
 import settingsRepositoryTest from './unit/SettingsRepository.test';
+import settingsViewModelTest from './unit/SettingsViewModel.test';
 import staticContentRepositoryTest from './unit/StaticContentRepository.test';
 import testFixtureTest from './unit/TestFixture.test';
 
 export default function testsuite() {
   appLimitsTest();
+  appStateStoreTest();
   appRouterTest();
   diagnosisModelsTest();
   diagnosisRuleResourceLoaderTest();
@@ -42,6 +45,7 @@ export default function testsuite() {
   resultModelsTest();
   settingsModelsTest();
   settingsRepositoryTest();
+  settingsViewModelTest();
   staticContentRepositoryTest();
   testFixtureTest();
 }

@@ -1,6 +1,17 @@
 import { SourceType } from '../../model/DiagnosisModels';
+import { ThemeMode } from '../../model/SettingsModels';
 import { AppRouter, ArkNavigationStack } from '../../router/AppRouter';
 import { RouteName } from '../../router/RouteNames';
+import {
+  appStateStore as globalAppStateStore,
+  switchApplicationTheme
+} from '../../service/platform/AppRuntime';
+import { AppStateStore } from '../../store/AppStateStore';
+import {
+  getThemePalette,
+  ThemePalette,
+  themeStatusText
+} from '../../theme/ThemeModels';
 import { DiagnosisPage } from '../diagnosis/DiagnosisPage';
 import { HistorySettingsPage } from '../history/HistorySettingsPage';
 import { ReportPage } from '../report/ReportPage';
@@ -13,6 +24,12 @@ struct HomePage {
   private readonly pathStack: NavPathStack = new NavPathStack();
   @Provide('appRouter')
   private appRouter: AppRouter = new AppRouter(new ArkNavigationStack(this.pathStack));
+  @Provide('appState')
+  private appState: AppStateStore = globalAppStateStore;
+
+  private palette(): ThemePalette {
+    return getThemePalette(this.appState.effectiveTheme);
+  }
 
   @Builder
   routeDestination(routeName: string) {
@@ -32,7 +49,9 @@ struct HomePage {
           Text($r('app.string.route_unknown_title'))
             .fontSize(24)
             .fontWeight(FontWeight.Bold)
+            .fontColor(this.palette().primaryText)
           Text($r('app.string.route_unknown_message'))
+            .fontColor(this.palette().secondaryText)
           Button($r('app.string.route_back_home'))
             .onClick(() => this.appRouter.openHome())
         }
@@ -40,6 +59,7 @@ struct HomePage {
         .height('100%')
         .justifyContent(FlexAlign.Center)
         .padding(24)
+        .backgroundColor(this.palette().pageBackground)
       }
       .title($r('app.string.route_unknown_title'))
     }
@@ -51,15 +71,31 @@ struct HomePage {
         Text($r('app.string.route_home_title'))
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
+          .fontColor(this.palette().primaryText)
         Text($r('app.string.app_name'))
           .fontSize(28)
           .fontWeight(FontWeight.Bold)
+          .fontColor(this.palette().primaryText)
         Text($r('app.string.home_placeholder'))
           .fontSize(16)
-          .fontColor($r('sys.color.font_secondary'))
+          .fontColor(this.palette().secondaryText)
         Text($r('app.string.route_placeholder_message'))
           .fontSize(14)
-          .fontColor($r('sys.color.font_secondary'))
+          .fontColor(this.palette().secondaryText)
+        Text(themeStatusText(this.appState.selectedThemeMode, this.appState.effectiveTheme))
+          .fontSize(14)
+          .fontColor(this.palette().accent)
+        if (this.appState.isThemeSessionOnly) {
+          Text($r('app.string.theme_session_only'))
+            .fontSize(14)
+            .fontColor(this.palette().error)
+        }
+        Button($r('app.string.theme_verify_light'))
+          .onClick(() => switchApplicationTheme(ThemeMode.LIGHT))
+        Button($r('app.string.theme_verify_dark'))
+          .onClick(() => switchApplicationTheme(ThemeMode.DARK))
+        Button($r('app.string.theme_verify_system'))
+          .onClick(() => switchApplicationTheme(ThemeMode.SYSTEM))
         Button($r('app.string.route_open_diagnosis'))
           .onClick(() => this.appRouter.openDiagnosis({
             sourceType: SourceType.TEXT,
@@ -78,9 +114,11 @@ struct HomePage {
       .height('100%')
       .justifyContent(FlexAlign.Center)
       .padding(24)
+      .backgroundColor(this.palette().pageBackground)
     }
     .hideTitleBar(true)
     .mode(NavigationMode.Stack)
     .navDestination(this.routeDestination)
+    .backgroundColor(this.palette().navigationBackground)
   }
 }

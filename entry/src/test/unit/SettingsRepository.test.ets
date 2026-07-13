@@ -145,5 +145,23 @@ export default function settingsRepositoryTest() {
       expect(restored.data?.themeMode).assertEqual(ThemeMode.DARK);
       expect(restored.data?.draftRecoveryEnabled).assertTrue();
     });
+
+    it('restores the last committed settings after an intermediate write fails', 0, async (): Promise<void> => {
+      const state = new InMemoryPreferencesState();
+      const committed = createChangedSettings();
+      committed.themeMode = ThemeMode.LIGHT;
+      expect((await createRepository(new InMemoryPreferencesStore(state)).update(committed)).success).assertTrue();
+      const failingStore = new InMemoryPreferencesStore(state, false, false, 3);
+      const repository = createRepository(failingStore);
+
+      const failed = await repository.update(createChangedSettings());
+      const sameInstance = await repository.get();
+      const reconstructed = await createRepository(new InMemoryPreferencesStore(state)).get();
+
+      expect(failed.success).assertFalse();
+      expect(sameInstance.data?.themeMode).assertEqual(ThemeMode.LIGHT);
+      expect(reconstructed.data?.themeMode).assertEqual(ThemeMode.LIGHT);
+      expect(reconstructed.data?.firstLaunchCompleted).assertTrue();
+    });
   });
 }

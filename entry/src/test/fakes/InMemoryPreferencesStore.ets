@@ -17,15 +17,19 @@ export class InMemoryPreferencesStore implements PreferencesStore {
   private state: InMemoryPreferencesState;
   private readFailure: boolean;
   private writeFailure: boolean;
+  private failAtWriteNumber: number;
+  private writeCount: number = 0;
 
   constructor(
     state: InMemoryPreferencesState,
     readFailure: boolean = false,
-    writeFailure: boolean = false
+    writeFailure: boolean = false,
+    failAtWriteNumber: number = 0
   ) {
     this.state = state;
     this.readFailure = readFailure;
     this.writeFailure = writeFailure;
+    this.failAtWriteNumber = failAtWriteNumber;
   }
 
   read(key: string, defaultValue: PreferenceValue): Promise<PreferenceValue> {
@@ -41,7 +45,8 @@ export class InMemoryPreferencesStore implements PreferencesStore {
   }
 
   write(key: string, value: PreferenceValue): Promise<void> {
-    if (this.writeFailure) {
+    this.writeCount++;
+    if (this.writeFailure || this.writeCount === this.failAtWriteNumber) {
       return Promise.reject(new Error('Synthetic preferences write failure'));
     }
     for (let index: number = 0; index < this.state.entries.length; index++) {

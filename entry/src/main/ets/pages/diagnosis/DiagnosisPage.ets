@@ -1,9 +1,17 @@
 import { AppRouter } from '../../router/AppRouter';
+import { AppStateStore } from '../../store/AppStateStore';
+import { getThemePalette, ThemePalette, themeStatusText } from '../../theme/ThemeModels';
 
 @Component
 export struct DiagnosisPage {
   @Consume('appRouter')
   router: AppRouter;
+  @Consume('appState')
+  appState: AppStateStore;
+
+  private palette(): ThemePalette {
+    return getThemePalette(this.appState.effectiveTheme);
+  }
 
   build() {
     NavDestination() {
@@ -11,8 +19,11 @@ export struct DiagnosisPage {
         Text($r('app.string.route_diagnosis_title'))
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
+          .fontColor(this.palette().primaryText)
         Text($r('app.string.route_placeholder_message'))
-          .fontColor($r('sys.color.font_secondary'))
+          .fontColor(this.palette().secondaryText)
+        Text(themeStatusText(this.appState.selectedThemeMode, this.appState.effectiveTheme))
+          .fontColor(this.palette().accent)
         Button($r('app.string.route_back_home'))
           .onClick(() => this.router.back())
       }
@@ -20,7 +31,9 @@ export struct DiagnosisPage {
       .height('100%')
       .justifyContent(FlexAlign.Center)
       .padding(24)
+      .backgroundColor(this.palette().pageBackground)
     }
     .title($r('app.string.route_diagnosis_title'))
+    .backgroundColor(this.palette().navigationBackground)
   }
 }

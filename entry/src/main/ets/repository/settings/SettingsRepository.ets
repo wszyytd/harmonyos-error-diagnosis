@@ -107,7 +107,7 @@ export class LocalSettingsRepository implements SettingsRepository {
   async update(settings: UserSettings): Promise<AppResult<UserSettings>> {
     try {
       const normalized = normalizedSettings(settings);
-      await this.persist(normalized);
+      await this.persistWithRollback(normalized);
       return createSuccessResult<UserSettings>(copySettings(normalized));
     } catch (_) {
       return this.writeFailure('update');
@@ -117,7 +117,7 @@ export class LocalSettingsRepository implements SettingsRepository {
   async reset(): Promise<AppResult<UserSettings>> {
     try {
       const defaults = createDefaultUserSettings();
-      await this.persist(defaults);
+      await this.persistWithRollback(defaults);
       return createSuccessResult<UserSettings>(copySettings(defaults));
     } catch (_) {
       return this.writeFailure('reset');
@@ -131,6 +131,23 @@ export class LocalSettingsRepository implements SettingsRepository {
     await this.store.write(StorageKey.DRAFT_RECOVERY_ENABLED, settings.draftRecoveryEnabled);
     await this.store.write(StorageKey.SCHEMA_VERSION, SETTINGS_SCHEMA_VERSION);
     await this.store.flush();
+  }
+
+  private async persistWithRollback(settings: UserSettings): Promise<void> {
+    const previous = await this.get();
+    if (!previous.success || previous.data === undefined) {
+      throw new Error('Settings snapshot unavailable');
+    }
+    try {
+      await this.persist(settings);
+    } catch (_) {
+      try {
+        await this.persist(previous.data);
+      } catch (_) {
+        // The original write failure remains authoritative; no platform details escape.
+      }
+      throw new Error('Settings persistence failed');
+    }
   }
 
   private readFailure(): AppResult<UserSettings> {
