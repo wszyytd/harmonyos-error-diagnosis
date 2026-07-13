@@ -1,7 +1,7 @@
 {
   "name": "entry",
   "version": "1.0.0",
-  "description": "Please describe the basic information.",
+  "description": "Entry module for the development error diagnosis assistant.",
   "main": "",
   "author": "",
   "license": "",
