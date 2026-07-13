@@ -15,6 +15,74 @@
     {
       "name": "home_placeholder",
       "value": "工程骨架已就绪"
+    },
+    {
+      "name": "route_home_title",
+      "value": "首页"
+    },
+    {
+      "name": "route_diagnosis_title",
+      "value": "诊断页"
+    },
+    {
+      "name": "route_report_title",
+      "value": "诊断报告页"
+    },
+    {
+      "name": "route_tools_title",
+      "value": "验证工具页"
+    },
+    {
+      "name": "route_history_settings_title",
+      "value": "记录与设置页"
+    },
+    {
+      "name": "route_privacy_title",
+      "value": "隐私说明页"
+    },
+    {
+      "name": "route_placeholder_message",
+      "value": "功能将在后续任务实现"
+    },
+    {
+      "name": "route_open_diagnosis",
+      "value": "进入诊断页"
+    },
+    {
+      "name": "route_open_tools",
+      "value": "进入验证工具页"
+    },
+    {
+      "name": "route_open_history_settings",
+      "value": "进入记录与设置页"
+    },
+    {
+      "name": "route_open_privacy",
+      "value": "查看隐私说明"
+    },
+    {
+      "name": "route_open_report_placeholder",
+      "value": "查看报告占位页"
+    },
+    {
+      "name": "route_back_home",
+      "value": "返回首页"
+    },
+    {
+      "name": "route_back_origin",
+      "value": "返回来源页面"
+    },
+    {
+      "name": "route_back_history_settings",
+      "value": "返回记录与设置"
+    },
+    {
+      "name": "route_unknown_title",
+      "value": "路由不可用"
+    },
+    {
+      "name": "route_unknown_message",
+      "value": "请安全返回首页"
     }
   ]
 }

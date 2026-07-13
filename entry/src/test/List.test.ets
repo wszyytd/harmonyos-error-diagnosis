@@ -1,4 +1,5 @@
 import appLimitsTest from './unit/AppLimits.test';
+import appRouterTest from './unit/AppRouter.test';
 import diagnosisModelsTest from './unit/DiagnosisModels.test';
 import diagnosisRuleResourceLoaderTest from './unit/DiagnosisRuleResourceLoader.test';
 import diagnosisRuleResourceTest from './unit/DiagnosisRuleResource.test';
@@ -10,6 +11,7 @@ import httpStatusResourceTest from './unit/HttpStatusResource.test';
 import httpStatusResourceLoaderTest from './unit/HttpStatusResourceLoader.test';
 import operationStateTest from './unit/OperationState.test';
 import rawResourceStoreTest from './unit/RawResourceStore.test';
+import routeRegistryTest from './unit/RouteRegistry.test';
 import reportRowMapperTest from './unit/ReportRowMapper.test';
 import reportRepositoryTest from './unit/ReportRepository.test';
 import reportStoreTest from './unit/ReportStore.test';
@@ -21,6 +23,7 @@ import testFixtureTest from './unit/TestFixture.test';
 
 export default function testsuite() {
   appLimitsTest();
+  appRouterTest();
   diagnosisModelsTest();
   diagnosisRuleResourceLoaderTest();
   diagnosisRuleResourceTest();
@@ -32,6 +35,7 @@ export default function testsuite() {
   httpStatusResourceLoaderTest();
   operationStateTest();
   rawResourceStoreTest();
+  routeRegistryTest();
   reportRowMapperTest();
   reportRepositoryTest();
   reportStoreTest();
