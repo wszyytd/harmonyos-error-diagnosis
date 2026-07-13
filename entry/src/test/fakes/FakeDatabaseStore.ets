@@ -1,6 +1,9 @@
 import {
+  DatabaseQuerySpec,
+  DatabaseResultSet,
   DatabaseStore,
-  DatabaseStoreProvider
+  DatabaseStoreProvider,
+  DatabaseValues
 } from '../../main/ets/storage/database/DatabaseManager';
 
 export enum SyntheticDatabaseFailureStage {
@@ -78,6 +81,18 @@ export class FakeDatabaseStore implements DatabaseStore {
   close(): Promise<void> {
     this.state.closeCount++;
     return Promise.resolve();
+  }
+
+  insert(_tableName: string, _values: DatabaseValues): Promise<number> {
+    return Promise.reject(new Error('Synthetic report insert is not configured for schema tests'));
+  }
+
+  query(_spec: DatabaseQuerySpec, _columns: Array<string>): Promise<DatabaseResultSet> {
+    return Promise.reject(new Error('Synthetic report query is not configured for schema tests'));
+  }
+
+  delete(_spec: DatabaseQuerySpec): Promise<number> {
+    return Promise.reject(new Error('Synthetic report delete is not configured for schema tests'));
   }
 }
 

@@ -18,6 +18,41 @@ import {
   LogMetadataKey
 } from '../../service/platform/HiLogService';
 
+export type DatabaseValue = string | number | null | undefined;
+export interface DatabaseValues {
+  id: string;
+  error_type: string;
+  secondary_tags_json: string;
+  summary: string;
+  evidence_json: string;
+  causes_json: string;
+  steps_json: string;
+  suggestions_json: string;
+  risk_notice: string | null;
+  raw_text: string;
+  source_type: string;
+  created_at: number;
+  saved_at: number;
+  is_favorite: number;
+  engine_version: string;
+}
+
+export interface DatabaseQuerySpec {
+  tableName: string;
+  filterColumn?: string;
+  filterValue?: string | number;
+  descendingColumn?: string;
+  offset?: number;
+  limit?: number;
+}
+
+/** Platform-neutral cursor boundary shared by production and test stores. */
+export interface DatabaseResultSet {
+  goToNextRow(): boolean;
+  getValue(columnName: string): DatabaseValue;
+  close(): void;
+}
+
 /** Minimal production boundary required to initialize and own an RDB store. */
 export interface DatabaseStore {
   getVersion(): number;
@@ -27,6 +62,9 @@ export interface DatabaseStore {
   commit(): void;
   rollback(): void;
   close(): Promise<void>;
+  insert(tableName: string, values: DatabaseValues): Promise<number>;
+  query(spec: DatabaseQuerySpec, columns: Array<string>): Promise<DatabaseResultSet>;
+  delete(spec: DatabaseQuerySpec): Promise<number>;
 }
 
 /** Injectable database opening boundary. Test fakes implement this exact interface. */
@@ -87,6 +125,111 @@ class HarmonyDatabaseStore implements DatabaseStore {
       await this.store.close();
     } catch (_) {
       throw new Error('DATABASE_CLOSE_FAILED');
+    }
+  }
+
+  async insert(tableName: string, values: DatabaseValues): Promise<number> {
+    try {
+      const bucket: relationalStore.ValuesBucket = {};
+      bucket['id'] = values.id;
+      bucket['error_type'] = values.error_type;
+      bucket['secondary_tags_json'] = values.secondary_tags_json;
+      bucket['summary'] = values.summary;
+      bucket['evidence_json'] = values.evidence_json;
+      bucket['causes_json'] = values.causes_json;
+      bucket['steps_json'] = values.steps_json;
+      bucket['suggestions_json'] = values.suggestions_json;
+      bucket['risk_notice'] = values.risk_notice;
+      bucket['raw_text'] = values.raw_text;
+      bucket['source_type'] = values.source_type;
+      bucket['created_at'] = values.created_at;
+      bucket['saved_at'] = values.saved_at;
+      bucket['is_favorite'] = values.is_favorite;
+      bucket['engine_version'] = values.engine_version;
+      return await this.store.insert(tableName, bucket);
+    } catch (_) {
+      throw new Error('DATABASE_INSERT_FAILED');
+    }
+  }
+
+  async query(spec: DatabaseQuerySpec, columns: Array<string>): Promise<DatabaseResultSet> {
+    try {
+      const predicates = this.createPredicates(spec);
+      const resultSet = await this.store.query(predicates, columns);
+      return new HarmonyDatabaseResultSet(resultSet);
+    } catch (_) {
+      throw new Error('DATABASE_QUERY_FAILED');
+    }
+  }
+
+  async delete(spec: DatabaseQuerySpec): Promise<number> {
+    try {
+      return await this.store.delete(this.createPredicates(spec));
+    } catch (_) {
+      throw new Error('DATABASE_DELETE_FAILED');
+    }
+  }
+
+  private createPredicates(spec: DatabaseQuerySpec): relationalStore.RdbPredicates {
+    const predicates = new relationalStore.RdbPredicates(spec.tableName);
+    if (spec.filterColumn !== undefined && spec.filterValue !== undefined) {
+      predicates.equalTo(spec.filterColumn, spec.filterValue);
+    }
+    if (spec.descendingColumn !== undefined) {
+      predicates.orderByDesc(spec.descendingColumn);
+    }
+    if (spec.limit !== undefined) {
+      predicates.limitAs(spec.limit);
+    }
+    if (spec.offset !== undefined && spec.offset > 0) {
+      predicates.offsetAs(spec.offset);
+    }
+    return predicates;
+  }
+}
+
+class HarmonyDatabaseResultSet implements DatabaseResultSet {
+  private resultSet: relationalStore.ResultSet;
+
+  constructor(resultSet: relationalStore.ResultSet) {
+    this.resultSet = resultSet;
+  }
+
+  goToNextRow(): boolean {
+    try {
+      return this.resultSet.goToNextRow();
+    } catch (_) {
+      throw new Error('DATABASE_RESULT_MOVE_FAILED');
+    }
+  }
+
+  getValue(columnName: string): DatabaseValue {
+    try {
+      const columnIndex = this.resultSet.getColumnIndex(columnName);
+      if (columnIndex < 0) {
+        return undefined;
+      }
+      if (this.resultSet.isColumnNull(columnIndex)) {
+        return null;
+      }
+      const columnType = this.resultSet.getColumnTypeSync(columnIndex);
+      if (columnType === relationalStore.ColumnType.INTEGER) {
+        return this.resultSet.getLong(columnIndex);
+      }
+      if (columnType === relationalStore.ColumnType.TEXT) {
+        return this.resultSet.getString(columnIndex);
+      }
+      return undefined;
+    } catch (_) {
+      throw new Error('DATABASE_RESULT_VALUE_FAILED');
+    }
+  }
+
+  close(): void {
+    try {
+      this.resultSet.close();
+    } catch (_) {
+      throw new Error('DATABASE_RESULT_CLOSE_FAILED');
     }
   }
 }

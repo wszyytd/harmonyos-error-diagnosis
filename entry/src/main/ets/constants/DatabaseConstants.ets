@@ -6,6 +6,25 @@ export const DATABASE_VERSION: number = 1;
 
 export const DIAGNOSIS_REPORT_TABLE: string = 'diagnosis_report';
 
+/** Stable V1 column order used by report queries and row mapping. */
+export const DIAGNOSIS_REPORT_COLUMNS: Array<string> = [
+  'id',
+  'error_type',
+  'secondary_tags_json',
+  'summary',
+  'evidence_json',
+  'causes_json',
+  'steps_json',
+  'suggestions_json',
+  'risk_notice',
+  'raw_text',
+  'source_type',
+  'created_at',
+  'saved_at',
+  'is_favorite',
+  'engine_version'
+];
+
 export const INDEX_DIAGNOSIS_REPORT_SAVED_AT: string = 'idx_diagnosis_report_saved_at';
 export const INDEX_DIAGNOSIS_REPORT_ERROR_TYPE: string = 'idx_diagnosis_report_error_type';
 export const INDEX_DIAGNOSIS_REPORT_FAVORITE_SAVED_AT: string =
