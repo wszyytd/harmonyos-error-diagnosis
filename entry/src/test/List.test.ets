@@ -11,6 +11,7 @@ import httpStatusResourceLoaderTest from './unit/HttpStatusResourceLoader.test';
 import operationStateTest from './unit/OperationState.test';
 import rawResourceStoreTest from './unit/RawResourceStore.test';
 import reportRowMapperTest from './unit/ReportRowMapper.test';
+import reportRepositoryTest from './unit/ReportRepository.test';
 import reportStoreTest from './unit/ReportStore.test';
 import resultModelsTest from './unit/ResultModels.test';
 import settingsModelsTest from './unit/SettingsModels.test';
@@ -32,6 +33,7 @@ export default function testsuite() {
   operationStateTest();
   rawResourceStoreTest();
   reportRowMapperTest();
+  reportRepositoryTest();
   reportStoreTest();
   resultModelsTest();
   settingsModelsTest();

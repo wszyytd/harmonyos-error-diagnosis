@@ -9,6 +9,7 @@ import {
   createFailureResult,
   createSuccessResult
 } from '../../model/ResultModels';
+import { ReportDataStore } from '../../repository/report/ReportRepository';
 import {
   HiLogService,
   LogLevel,
@@ -67,7 +68,7 @@ function reportRow(resultSet: DatabaseResultSet): ReportDatabaseRow {
 }
 
 /** Low-level V1 report operations. Business save policy deliberately belongs to T10. */
-export class ReportStore {
+export class ReportStore implements ReportDataStore {
   private database: DatabaseStore | undefined;
   private logger: HiLogService;
 
