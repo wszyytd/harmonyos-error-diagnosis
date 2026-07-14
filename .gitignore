@@ -10,6 +10,7 @@
 /.clang-tidy
 **/.test
 /.appanalyzer
+/.superpowers
 
 # Local signing material (never commit certificates, private keys, or credentials)
 *.p12

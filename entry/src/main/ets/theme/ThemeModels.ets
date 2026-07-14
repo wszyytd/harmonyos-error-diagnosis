@@ -10,6 +10,13 @@ export enum EffectiveTheme {
 export interface ThemePalette {
   pageBackground: string;
   surfaceBackground: string;
+  focusSurface: string;
+  focusBorder: string;
+  focusGlow: string;
+  secondaryActionSurface: string;
+  secondaryActionBorder: string;
+  secondaryActionGlow: string;
+  secondaryActionText: string;
   navigationBackground: string;
   primaryText: string;
   secondaryText: string;
@@ -28,9 +35,16 @@ export interface ThemePlatform {
 }
 
 const LIGHT_PALETTE: ThemePalette = {
-  pageBackground: '#F6F7FB',
-  surfaceBackground: '#FFFFFF',
-  navigationBackground: '#F6F7FB',
+  pageBackground: '#ECEEF2',
+  surfaceBackground: '#F8F9FB',
+  focusSurface: '#66FFFFFF',
+  focusBorder: '#E6FFFFFF',
+  focusGlow: '#99FFFFFF',
+  secondaryActionSurface: '#66D7ECFF',
+  secondaryActionBorder: '#B3EAF6FF',
+  secondaryActionGlow: '#6658AFFF',
+  secondaryActionText: '#075985',
+  navigationBackground: '#ECEEF2',
   primaryText: '#171A1F',
   secondaryText: '#5D6673',
   accent: '#0A59F7',
@@ -40,6 +54,13 @@ const LIGHT_PALETTE: ThemePalette = {
 const DARK_PALETTE: ThemePalette = {
   pageBackground: '#101216',
   surfaceBackground: '#1A1D23',
+  focusSurface: '#805179C8',
+  focusBorder: '#F0B9DDFF',
+  focusGlow: '#B35D8FFF',
+  secondaryActionSurface: '#805179C8',
+  secondaryActionBorder: '#F0B9DDFF',
+  secondaryActionGlow: '#B35D8FFF',
+  secondaryActionText: '#F3F5F8',
   navigationBackground: '#101216',
   primaryText: '#F3F5F8',
   secondaryText: '#B5BDC9',
@@ -51,6 +72,13 @@ function copyPalette(palette: ThemePalette): ThemePalette {
   return {
     pageBackground: palette.pageBackground,
     surfaceBackground: palette.surfaceBackground,
+    focusSurface: palette.focusSurface,
+    focusBorder: palette.focusBorder,
+    focusGlow: palette.focusGlow,
+    secondaryActionSurface: palette.secondaryActionSurface,
+    secondaryActionBorder: palette.secondaryActionBorder,
+    secondaryActionGlow: palette.secondaryActionGlow,
+    secondaryActionText: palette.secondaryActionText,
     navigationBackground: palette.navigationBackground,
     primaryText: palette.primaryText,
     secondaryText: palette.secondaryText,
