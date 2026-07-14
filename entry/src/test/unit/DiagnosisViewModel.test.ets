@@ -3,13 +3,24 @@ import { DIAGNOSIS_INPUT_MAX_CHARACTERS } from '../../main/ets/constants/AppLimi
 import { DIAGNOSIS_EXAMPLE_TEXT } from '../../main/ets/constants/DiagnosisExamples';
 import { ErrorCode } from '../../main/ets/constants/ErrorCodes';
 import { InputValidationService } from '../../main/ets/domain/validation/InputValidationService';
+import { LocalDiagnosisService } from '../../main/ets/domain/diagnosis/DiagnosisService';
+import { RuleMatcher } from '../../main/ets/domain/diagnosis/RuleMatcher';
 import { SourceType } from '../../main/ets/model/DiagnosisModels';
+import { OperationStatus } from '../../main/ets/model/ResultModels';
 import { RouteName } from '../../main/ets/router/RouteNames';
+import { ReportRouteParams } from '../../main/ets/router/RouteModels';
+import { AppRouter } from '../../main/ets/router/AppRouter';
 import { HiLogService } from '../../main/ets/service/platform/HiLogService';
 import { DiagnosisSessionStore } from '../../main/ets/store/DiagnosisSessionStore';
-import { DiagnosisViewModel } from '../../main/ets/viewmodel/diagnosis/DiagnosisViewModel';
+import {
+  DiagnosisFlowDependencies,
+  DiagnosisViewModel
+} from '../../main/ets/viewmodel/diagnosis/DiagnosisViewModel';
 import { CapturingLogSink } from '../fakes/CapturingLogSink';
 import { FakeTimeProvider, SequenceIdGenerator } from '../fakes/DiagnosisSessionFakes';
+import { FakeNavigationStack } from '../fakes/FakeNavigationStack';
+import { SuccessfulStaticContentRepository } from '../fakes/DiagnosisFlowFakes';
+import { createDiagnosisRulesFixture } from '../fixtures/DiagnosisEngineFixtures';
 
 interface DiagnosisViewModelFixture {
   store: DiagnosisSessionStore;
@@ -31,6 +42,45 @@ function createFixture(ids: Array<string> = ['session-1', 'session-2']): Diagnos
 
 export default function diagnosisViewModelTest() {
   describe('DiagnosisViewModel', () => {
+    it('diagnoses valid text into the current memory session and navigates with sessionId only', 0, async () => {
+      const fixture = createFixture();
+      const stack = new FakeNavigationStack();
+      const logger = new HiLogService(new CapturingLogSink());
+      const dependencies: DiagnosisFlowDependencies = {
+        staticContentRepository: new SuccessfulStaticContentRepository(createDiagnosisRulesFixture()),
+        diagnosisService: new LocalDiagnosisService(
+          new RuleMatcher(),
+          new SequenceIdGenerator(['report-t17']),
+          new FakeTimeProvider(2000),
+          logger
+        ),
+        router: new AppRouter(stack),
+        logger: logger
+      };
+      const viewModel = new DiagnosisViewModel(
+        fixture.store,
+        new InputValidationService(logger),
+        { sourceType: SourceType.TEXT, origin: RouteName.HOME },
+        dependencies
+      );
+      viewModel.updateText('ArkTS:ERROR arkts-no-type-query');
+
+      expect(await viewModel.diagnose()).assertTrue();
+
+      expect(viewModel.diagnosisOperation.status).assertEqual(OperationStatus.SUCCESS);
+      expect(viewModel.session.pendingReport?.errorType).assertEqual('ArkTS编译错误');
+      expect((viewModel.session.pendingReport?.evidence ?? []).length > 0).assertTrue();
+      expect((viewModel.session.pendingReport?.possibleCauses ?? []).length > 0).assertTrue();
+      expect((viewModel.session.pendingReport?.steps ?? []).length > 0).assertTrue();
+      expect(stack.paths.length).assertEqual(1);
+      expect(stack.paths[0].name).assertEqual(RouteName.REPORT);
+      const params = stack.paths[0].param as ReportRouteParams;
+      expect(params.sessionId).assertEqual('session-2');
+      expect(params.origin).assertEqual(RouteName.DIAGNOSIS);
+      expect(params.reportId).assertUndefined();
+      expect(JSON.stringify(stack.paths[0].param).includes('ArkTS')).assertFalse();
+    });
+
     it('creates a new TEXT session from route parameters', 0, () => {
       const fixture = createFixture();
 

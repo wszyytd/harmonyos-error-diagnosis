@@ -52,6 +52,9 @@ export default function appStateStoreTest() {
       expect(light.pageBackground === dark.pageBackground).assertFalse();
       expect(light.primaryText === dark.primaryText).assertFalse();
       expect(light.navigationBackground === dark.navigationBackground).assertFalse();
+      expect(light.focusGlow.length > 0).assertTrue();
+      expect(dark.focusGlow.length > 0).assertTrue();
+      expect(light.focusGlow === dark.focusGlow).assertFalse();
     });
   });
 }

@@ -53,9 +53,11 @@ function lengthRange(characterCount: number): string {
 /** Pure input normalization and validation boundary for later diagnosis orchestration. */
 export class InputValidationService {
   private logger: HiLogService;
+  private maxCharacters: number;
 
-  constructor(logger: HiLogService) {
+  constructor(logger: HiLogService, maxCharacters: number = DIAGNOSIS_INPUT_MAX_CHARACTERS) {
     this.logger = logger;
+    this.maxCharacters = maxCharacters;
   }
 
   validateDiagnosisText(rawText: string): AppResult<ValidatedDiagnosisText> {
@@ -66,7 +68,7 @@ export class InputValidationService {
       this.logValidation(characterCount, error.code);
       return createFailureResult<ValidatedDiagnosisText>(error);
     }
-    if (characterCount > DIAGNOSIS_INPUT_MAX_CHARACTERS) {
+    if (characterCount > this.maxCharacters) {
       const error = inputError(ErrorCode.VAL_INPUT_TOO_LONG);
       this.logValidation(characterCount, error.code);
       return createFailureResult<ValidatedDiagnosisText>(error);

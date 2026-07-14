@@ -10,6 +10,9 @@ export enum EffectiveTheme {
 export interface ThemePalette {
   pageBackground: string;
   surfaceBackground: string;
+  focusSurface: string;
+  focusBorder: string;
+  focusGlow: string;
   navigationBackground: string;
   primaryText: string;
   secondaryText: string;
@@ -30,6 +33,9 @@ export interface ThemePlatform {
 const LIGHT_PALETTE: ThemePalette = {
   pageBackground: '#F6F7FB',
   surfaceBackground: '#FFFFFF',
+  focusSurface: '#996FA8FF',
+  focusBorder: '#E65A8CFF',
+  focusGlow: '#99558DFF',
   navigationBackground: '#F6F7FB',
   primaryText: '#171A1F',
   secondaryText: '#5D6673',
@@ -40,6 +46,9 @@ const LIGHT_PALETTE: ThemePalette = {
 const DARK_PALETTE: ThemePalette = {
   pageBackground: '#101216',
   surfaceBackground: '#1A1D23',
+  focusSurface: '#805179C8',
+  focusBorder: '#F0B9DDFF',
+  focusGlow: '#B35D8FFF',
   navigationBackground: '#101216',
   primaryText: '#F3F5F8',
   secondaryText: '#B5BDC9',
@@ -51,6 +60,9 @@ function copyPalette(palette: ThemePalette): ThemePalette {
   return {
     pageBackground: palette.pageBackground,
     surfaceBackground: palette.surfaceBackground,
+    focusSurface: palette.focusSurface,
+    focusBorder: palette.focusBorder,
+    focusGlow: palette.focusGlow,
     navigationBackground: palette.navigationBackground,
     primaryText: palette.primaryText,
     secondaryText: palette.secondaryText,

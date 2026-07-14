@@ -7,6 +7,10 @@ import { ThemeMode } from '../../model/SettingsModels';
 import { AppRouter, ArkNavigationStack } from '../../router/AppRouter';
 import { RouteName } from '../../router/RouteNames';
 import {
+  DiagnosisRouteParams,
+  ReportRouteParams
+} from '../../router/RouteModels';
+import {
   appStateStore as globalAppStateStore,
   getHomeViewModel,
   switchApplicationTheme
@@ -47,7 +51,13 @@ struct HomePage {
   }
 
   @Builder
-  private primaryEntry(title: Resource, description: Resource, action: () => void) {
+  private primaryEntry(
+    entryId: string,
+    title: Resource,
+    description: Resource,
+    isFocus: boolean,
+    action: () => void
+  ) {
     Button() {
       Column({ space: 8 }) {
         Text(title)
@@ -65,11 +75,23 @@ struct HomePage {
       .width('100%')
       .alignItems(HorizontalAlign.Start)
     }
+    .id(entryId)
     .width('100%')
     .constraintSize({ minHeight: 96 })
     .padding(18)
     .borderRadius(16)
-    .backgroundColor(this.palette().surfaceBackground)
+    .backgroundColor(isFocus ? this.palette().focusSurface : this.palette().surfaceBackground)
+    .backgroundBlurStyle(isFocus ? BlurStyle.Thin : BlurStyle.NONE)
+    .border({
+      width: isFocus ? 2 : 0,
+      color: isFocus ? this.palette().focusBorder : this.palette().surfaceBackground
+    })
+    .shadow({
+      radius: isFocus ? 24 : 0,
+      color: isFocus ? this.palette().focusGlow : '#00000000',
+      offsetX: 0,
+      offsetY: isFocus ? 6 : 0
+    })
     .onClick(action)
   }
 
@@ -90,11 +112,11 @@ struct HomePage {
   }
 
   @Builder
-  routeDestination(routeName: string) {
+  routeDestination(routeName: string, routeParams: object) {
     if (routeName === RouteName.DIAGNOSIS) {
-      DiagnosisPage();
+      DiagnosisPage({ routeParams: routeParams as DiagnosisRouteParams });
     } else if (routeName === RouteName.REPORT) {
-      ReportPage();
+      ReportPage({ routeParams: routeParams as ReportRouteParams });
     } else if (routeName === RouteName.TOOLS) {
       ToolsPage();
     } else if (routeName === RouteName.HISTORY_SETTINGS) {
@@ -147,13 +169,17 @@ struct HomePage {
           .alignItems(HorizontalAlign.Start)
 
           this.primaryEntry(
+            'home_image_diagnosis',
             $r('app.string.home_image_diagnosis'),
             $r('app.string.home_image_diagnosis_description'),
+            false,
             (): void => { this.homeNavigation.openImageDiagnosis(); }
           )
           this.primaryEntry(
+            'home_text_diagnosis',
             $r('app.string.home_text_diagnosis'),
             $r('app.string.home_text_diagnosis_description'),
+            true,
             (): void => { this.homeNavigation.openTextDiagnosis(); }
           )
 

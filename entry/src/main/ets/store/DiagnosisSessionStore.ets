@@ -132,7 +132,6 @@ export class DiagnosisSessionStore {
     this.currentValue.rawText = rawText;
     this.currentValue.normalizedText = '';
     this.currentValue.validationError = undefined;
-    this.currentValue.pendingReport = undefined;
     this.touch();
     return true;
   }
@@ -142,7 +141,6 @@ export class DiagnosisSessionStore {
       return false;
     }
     this.currentValue.imageUri = imageUri === undefined || imageUri.length === 0 ? undefined : imageUri;
-    this.currentValue.pendingReport = undefined;
     this.touch();
     return true;
   }

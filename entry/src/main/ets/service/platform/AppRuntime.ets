@@ -3,7 +3,24 @@ import {
   ConfigurationConstant
 } from '@kit.AbilityKit';
 import { SETTINGS_PREFERENCES_NAME } from '../../constants/StorageKeys';
+import {
+  DiagnosisService,
+  LocalDiagnosisService
+} from '../../domain/diagnosis/DiagnosisService';
+import { RuleMatcher } from '../../domain/diagnosis/RuleMatcher';
+import { InputValidationService } from '../../domain/validation/InputValidationService';
 import { ThemeMode } from '../../model/SettingsModels';
+import { DiagnosisRuleResourceLoader } from '../../repository/static/DiagnosisRuleResourceLoader';
+import { HttpStatusResourceLoader } from '../../repository/static/HttpStatusResourceLoader';
+import {
+  LocalStaticContentRepository,
+  StaticContentRepository
+} from '../../repository/static/StaticContentRepository';
+import { AppRouter } from '../../router/AppRouter';
+import {
+  DiagnosisRouteParams,
+  ReportRouteParams
+} from '../../router/RouteModels';
 import { LocalReportRepository } from '../../repository/report/LocalReportRepository';
 import {
   ReportRepository,
@@ -14,18 +31,31 @@ import {
   SettingsRepository
 } from '../../repository/settings/SettingsRepository';
 import { AppStateStore } from '../../store/AppStateStore';
+import { DiagnosisSessionStore } from '../../store/DiagnosisSessionStore';
 import { LazyHarmonyPreferencesStore } from '../../storage/preferences/PreferencesStore';
 import {
   DatabaseManager,
   HarmonyDatabaseStoreProvider
 } from '../../storage/database/DatabaseManager';
 import { LazyReportDataStore } from '../../storage/database/LazyReportDataStore';
+import {
+  RawResourceStore,
+  ResourceManagerRawFileContentSource,
+  Utf8RawTextDecoder
+} from '../../storage/static/RawResourceStore';
+import {
+  DiagnosisFlowDependencies,
+  DiagnosisViewModel
+} from '../../viewmodel/diagnosis/DiagnosisViewModel';
 import { HomeViewModel } from '../../viewmodel/home/HomeViewModel';
+import { ReportViewModel } from '../../viewmodel/report/ReportViewModel';
 import { SettingsViewModel } from '../../viewmodel/settings/SettingsViewModel';
 import { ThemePlatform } from '../../theme/ThemeModels';
 import { HarmonyHiLogSink } from './HarmonyHiLogSink';
 import { HiLogService } from './HiLogService';
 import { HarmonyThemePlatform } from './HarmonyThemePlatform';
+import { SystemIdGenerator } from '../../utils/IdGenerator';
+import { SystemTimeProvider } from '../../utils/TimeProvider';
 
 /** Process-level state shared by the Navigation root and all six T11 pages. */
 export const appStateStore: AppStateStore = new AppStateStore();
@@ -33,6 +63,11 @@ export const appStateStore: AppStateStore = new AppStateStore();
 let settingsViewModel: SettingsViewModel | undefined;
 let homeViewModel: HomeViewModel | undefined;
 let reportDataStore: LazyReportDataStore | undefined;
+let diagnosisSessionStore: DiagnosisSessionStore | undefined;
+let diagnosisStaticRepository: StaticContentRepository | undefined;
+let diagnosisService: DiagnosisService | undefined;
+let diagnosisLogger: HiLogService | undefined;
+let diagnosisValidationService: InputValidationService | undefined;
 
 /** Synchronously wires dependencies, then restores Preferences without blocking first render. */
 export function configureAppRuntime(context: common.UIAbilityContext): Promise<boolean> {
@@ -43,11 +78,85 @@ export function configureAppRuntime(context: common.UIAbilityContext): Promise<b
     new HiLogService(new HarmonyHiLogSink())
   );
   configureHomeRuntime(context);
+  configureDiagnosisRuntime(context);
   return configureAppRuntimeWithAdapters(
     repository,
     new HarmonyThemePlatform(context.getApplicationContext(), initialColorMode),
     new HiLogService(new HarmonyHiLogSink())
   );
+}
+
+export function configureDiagnosisRuntime(context: common.UIAbilityContext): void {
+  diagnosisLogger = new HiLogService(new HarmonyHiLogSink());
+  const reader = new RawResourceStore(
+    new ResourceManagerRawFileContentSource(context.resourceManager),
+    new Utf8RawTextDecoder(),
+    diagnosisLogger
+  );
+  diagnosisStaticRepository = new LocalStaticContentRepository(
+    new DiagnosisRuleResourceLoader(reader, diagnosisLogger),
+    new HttpStatusResourceLoader(reader, diagnosisLogger),
+    reader,
+    diagnosisLogger
+  );
+  diagnosisSessionStore = new DiagnosisSessionStore(
+    new SystemIdGenerator(),
+    new SystemTimeProvider()
+  );
+  diagnosisService = new LocalDiagnosisService(
+    new RuleMatcher(),
+    new SystemIdGenerator(),
+    new SystemTimeProvider(),
+    diagnosisLogger
+  );
+  diagnosisValidationService = new InputValidationService(diagnosisLogger);
+}
+
+/** Replaceable composition seam used by device tests; every dependency implements a production interface. */
+export function configureDiagnosisRuntimeWithDependencies(
+  sessionStore: DiagnosisSessionStore,
+  staticRepository: StaticContentRepository,
+  service: DiagnosisService,
+  logger: HiLogService,
+  validationService?: InputValidationService
+): void {
+  diagnosisSessionStore = sessionStore;
+  diagnosisStaticRepository = staticRepository;
+  diagnosisService = service;
+  diagnosisLogger = logger;
+  diagnosisValidationService = validationService ?? new InputValidationService(logger);
+}
+
+export function createDiagnosisViewModel(
+  routeParams: DiagnosisRouteParams,
+  router: AppRouter
+): DiagnosisViewModel {
+  if (diagnosisSessionStore === undefined || diagnosisStaticRepository === undefined ||
+    diagnosisService === undefined || diagnosisLogger === undefined || diagnosisValidationService === undefined) {
+    throw new Error('DIAGNOSIS_RUNTIME_NOT_CONFIGURED');
+  }
+  const dependencies: DiagnosisFlowDependencies = {
+    staticContentRepository: diagnosisStaticRepository,
+    diagnosisService: diagnosisService,
+    router: router,
+    logger: diagnosisLogger
+  };
+  return new DiagnosisViewModel(
+    diagnosisSessionStore,
+    diagnosisValidationService,
+    routeParams,
+    dependencies
+  );
+}
+
+export function createReportViewModel(
+  routeParams: ReportRouteParams,
+  router: AppRouter
+): ReportViewModel {
+  if (diagnosisSessionStore === undefined) {
+    throw new Error('DIAGNOSIS_RUNTIME_NOT_CONFIGURED');
+  }
+  return new ReportViewModel(diagnosisSessionStore, router, routeParams);
 }
 
 function configureHomeRuntime(context: common.UIAbilityContext): void {
@@ -110,4 +219,9 @@ export function disposeAppRuntime(): void {
   homeViewModel = undefined;
   reportDataStore?.close();
   reportDataStore = undefined;
+  diagnosisSessionStore = undefined;
+  diagnosisStaticRepository = undefined;
+  diagnosisService = undefined;
+  diagnosisLogger = undefined;
+  diagnosisValidationService = undefined;
 }
