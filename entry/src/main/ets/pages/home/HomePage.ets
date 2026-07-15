@@ -301,7 +301,7 @@ struct HomePage {
             .fontColor(this.palette().secondaryText)
         }
         .width('100%')
-        .padding({ left: 20, right: 20, top: 24, bottom: 112 })
+        .padding({ left: 20, right: 20, top: 24, bottom: 190 })
         .alignItems(HorizontalAlign.Start)
       }
       .width('100%')
@@ -325,7 +325,7 @@ struct HomePage {
           })
         }
         .width('100%')
-        .padding({ left: 18, right: 18, bottom: 14 })
+        .padding({ left: 18, right: 18, bottom: 22 })
       }
       .width('100%')
       .height('100%')

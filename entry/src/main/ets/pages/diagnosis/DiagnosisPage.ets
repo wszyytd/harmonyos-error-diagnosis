@@ -1,4 +1,6 @@
 import { uiMaterial } from '@kit.ArkUI';
+import { image } from '@kit.ImageKit';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { AsyncStatePanel } from '../../components/common/AsyncStatePanel';
 import { InlineErrorNotice } from '../../components/common/InlineErrorNotice';
 import { NoticeSeverity } from '../../components/common/CommonComponentModels';
@@ -10,6 +12,7 @@ import { AppRouter } from '../../router/AppRouter';
 import { RouteName } from '../../router/RouteNames';
 import { DiagnosisRouteParams } from '../../router/RouteModels';
 import { createDiagnosisViewModel } from '../../service/platform/AppRuntime';
+import { VisionAiAdapter } from '../../service/ai/VisionAiAdapter';
 import { AppStateStore } from '../../store/AppStateStore';
 import { EffectiveTheme, getThemePalette, ThemePalette } from '../../theme/ThemeModels';
 import { DiagnosisViewModel } from '../../viewmodel/diagnosis/DiagnosisViewModel';
@@ -37,6 +40,11 @@ export struct DiagnosisPage {
   viewModel: DiagnosisViewModel | undefined = undefined;
   @State
   startButtonScale: number = 1;
+  @State
+  ocrStatus: string = '选择报错截图，Core Vision Kit 会在设备端提取文字。';
+  @State
+  ocrBusy: boolean = false;
+  private readonly vision: VisionAiAdapter = new VisionAiAdapter();
 
   aboutToAppear(): void {
     if (this.viewModel === undefined) {
@@ -50,6 +58,39 @@ export struct DiagnosisPage {
 
   private diagnose(): void {
     this.viewModel?.diagnose();
+  }
+
+  private async chooseImageAndRecognize(): Promise<void> {
+    if (this.ocrBusy) {
+      return;
+    }
+    this.ocrBusy = true;
+    this.ocrStatus = '正在打开系统安全图片选择器…';
+    try {
+      const options = new photoAccessHelper.PhotoSelectOptions();
+      options.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
+      options.maxSelectNumber = 1;
+      const selected = await new photoAccessHelper.PhotoViewPicker().select(options);
+      if (selected.photoUris.length === 0) {
+        this.ocrStatus = '没有选择图片，可继续手动输入。';
+        return;
+      }
+      this.ocrStatus = '正在调用视觉 AI 识别截图文字…';
+      const source = image.createImageSource(selected.photoUris[0]);
+      const pixelMap = await source.createPixelMap();
+      const text = await this.vision.recognize(pixelMap);
+      pixelMap.release();
+      source.release();
+      this.ocrStatus = text.startsWith('视觉 AI') || text.startsWith('当前设备') || text.startsWith('图片中') ?
+        text : `识别完成，共提取 ${text.length} 个字符。`;
+      if (!text.startsWith('视觉 AI') && !text.startsWith('当前设备') && !text.startsWith('图片中')) {
+        this.viewModel?.updateText(text);
+      }
+    } catch (_) {
+      this.ocrStatus = '图片选择或视觉 AI 暂不可用，可继续粘贴错误文本。';
+    } finally {
+      this.ocrBusy = false;
+    }
   }
 
   build() {
@@ -80,9 +121,21 @@ export struct DiagnosisPage {
 
             if (this.viewModel.session.sourceType === SourceType.IMAGE) {
               InlineErrorNotice({
-                message: '当前设备 OCR 尚未接入，请先手动输入或粘贴错误文本。',
+                message: this.ocrStatus,
                 severity: NoticeSeverity.INFO
               })
+              Button(this.ocrBusy ? '正在识别…' : '选择截图并识别文字')
+                .width('100%')
+                .constraintSize({ minHeight: 48 })
+                .enabled(!this.ocrBusy)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(this.palette().accent)
+                .backgroundColor(this.palette().surfaceBackground)
+                .border({ width: 1, color: this.palette().focusBorder })
+                .borderRadius(14)
+                .onClick((): void => {
+                  this.chooseImageAndRecognize();
+                })
             }
 
             DiagnosisTextEditor({
