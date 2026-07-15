@@ -28,7 +28,9 @@ export struct ToolsRootView {
   @State private provider: string = 'READY';
   @State private steps: Array<string> = [];
   @State private busy: boolean = false;
-  @State private apiEndpoint: string = 'http://10.0.2.2:8787';
+  @State private apiEndpoint: string = 'http://127.0.0.1:8787';
+  @State private apiKey: string = '';
+  @State private apiModel: string = 'openai/gpt-oss-20b';
   @State private apiStatus: string = '尚未检测';
   @State private agentId: string = '';
   @State private agentSupport: string = '输入平台注册的 Agent ID 后可检测系统能力';
@@ -41,6 +43,12 @@ export struct ToolsRootView {
   @State private windowStatus: string = '尚未创建子窗';
   private readonly vision: VisionAiAdapter = new VisionAiAdapter();
   private readonly agent: HarmonyAgentAdapter = new HarmonyAgentAdapter();
+
+  aboutToAppear(): void {
+    this.apiEndpoint = aiBackendService.getEndpoint();
+    this.apiModel = aiBackendService.getModel();
+    this.checkApi();
+  }
 
   private palette(): ThemePalette {
     return getThemePalette(this.appState.effectiveTheme, this.appState.accentTheme);
@@ -86,8 +94,12 @@ export struct ToolsRootView {
 
   private async checkApi(): Promise<void> {
     aiBackendService.setEndpoint(this.apiEndpoint);
+    aiBackendService.setApiKey(this.apiKey);
+    aiBackendService.setModel(this.apiModel);
     this.apiStatus = '检测中…';
-    this.apiStatus = await aiBackendService.healthCheck() ? 'API 在线，可正常调用' : 'API 不可达，将自动降级到免费端侧模型';
+    this.apiStatus = await aiBackendService.healthCheck() ?
+      (this.apiKey.trim().length > 0 ? '在线模型已连接，可发送真实请求' : '本地 API 在线，可正常调用') :
+      'API 不可达：请启动本地后端或检查 API 地址、密钥和网络';
   }
 
   private async checkAgentSupport(): Promise<void> {
@@ -98,7 +110,7 @@ export struct ToolsRootView {
       '当前 Agent ID 未注册或设备暂不支持；本地 Agent 仍可演示';
   }
 
-  private runSkill(name: string): void {
+  private async runSkill(name: string): Promise<void> {
     if (name === 'JSON Formatter') {
       try {
         this.skillResult = `JSON Formatter 执行成功\n${JSON.stringify(JSON.parse(this.jsonInput) as object, null, 2)}`;
@@ -106,11 +118,17 @@ export struct ToolsRootView {
         this.skillResult = 'JSON Formatter：输入格式错误，请检查引号、逗号和括号。';
       }
     } else if (name === 'Error Triage') {
-      this.skillResult = 'Error Triage：已识别为依赖问题，建议核对版本、registry 与锁文件。';
+      const reply = await aiBackendService.chat(this.prompt, AiModelMode.LOCAL_FREE);
+      this.skillResult = `Error Triage 执行成功\n${reply.text}\n${reply.steps.join('\n')}`;
     } else if (name === 'Report Writer') {
-      this.skillResult = 'Report Writer：已生成“现象—原因—步骤—验证”四段式诊断报告。';
+      const reply = await aiBackendService.chat(this.prompt, AiModelMode.LOCAL_FREE);
+      this.skillResult = `诊断报告\n现象：${this.prompt.trim()}\n分析：${reply.text}\n处理步骤：${reply.steps.join('；')}\n验证：重新执行失败操作并确认首个错误消失。`;
     } else {
-      this.skillResult = 'Privacy Redactor：已隐藏用户路径、Token、邮箱和设备标识。';
+      const redacted = this.prompt
+        .replace(/[A-Za-z]:\\[^\s]+/g, '[本地路径]')
+        .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[邮箱]')
+        .replace(/(token|api[_-]?key|password)\s*[:=]\s*\S+/gi, '$1=[已隐藏]');
+      this.skillResult = `Privacy Redactor 执行成功\n${redacted}`;
     }
   }
 
@@ -125,11 +143,18 @@ export struct ToolsRootView {
   private lookupHttp(): void {
     const code = this.httpCode.trim();
     if (code === '200') this.httpResult = '200 OK · 请求成功';
+    else if (code === '201') this.httpResult = '201 Created · 资源创建成功';
+    else if (code === '204') this.httpResult = '204 No Content · 成功但没有响应正文';
     else if (code === '400') this.httpResult = '400 Bad Request · 请求参数错误';
     else if (code === '401') this.httpResult = '401 Unauthorized · 缺少有效凭证';
     else if (code === '403') this.httpResult = '403 Forbidden · 权限不足';
+    else if (code === '404') this.httpResult = '404 Not Found · 资源或路由不存在';
+    else if (code === '408') this.httpResult = '408 Request Timeout · 请求超时';
+    else if (code === '429') this.httpResult = '429 Too Many Requests · 请求频率过高';
     else if (code === '500') this.httpResult = '500 Internal Server Error · 服务端异常';
-    else this.httpResult = `${code} Not Found · 检查 URL、路由和部署状态`;
+    else if (code === '502') this.httpResult = '502 Bad Gateway · 上游服务响应异常';
+    else if (code === '503') this.httpResult = '503 Service Unavailable · 服务暂不可用';
+    else this.httpResult = `${code} · 未收录状态码，请核对 HTTP 标准定义`;
   }
 
   private async chooseImage(): Promise<void> {
@@ -226,6 +251,14 @@ export struct ToolsRootView {
           .backgroundColor(this.modelMode === AiModelMode.BACKEND_API ? '#5B8CFF' : '#24364E')
           .onClick(() => this.modelMode = AiModelMode.BACKEND_API)
       }.width('100%')
+      if (this.modelMode === AiModelMode.BACKEND_API) {
+        TextInput({ text: this.apiKey, placeholder: 'API Key：输入后调用真实在线模型' })
+          .height(46).onChange((value: string) => this.apiKey = value)
+        TextInput({ text: this.apiModel, placeholder: '模型名，例如 openai/gpt-oss-20b' })
+          .height(46).onChange((value: string) => this.apiModel = value)
+        Text('兼容 OpenAI Chat Completions。Key 只保存在本次运行内，不写入本地文件。')
+          .width('100%').fontSize(11).lineHeight(18).fontColor(this.palette().secondaryText)
+      }
       TextArea({ text: this.prompt, placeholder: '输入技术问题或 Agent 任务' })
         .height(140).fontSize(14).fontColor(this.palette().primaryText)
         .backgroundColor(this.isDark() ? '#A607111F' : '#F7FFFFFF')
@@ -319,8 +352,29 @@ export struct ToolsRootView {
     Column({ space: 14 }) {
       Text('API 调用入口').width('100%').fontSize(19).fontWeight(FontWeight.Bold)
         .fontColor(this.palette().primaryText)
-      TextInput({ text: this.apiEndpoint, placeholder: 'http://10.0.2.2:8787' })
+      TextInput({ text: this.apiEndpoint, placeholder: 'http://127.0.0.1:8787' })
         .height(48).onChange((value: string) => this.apiEndpoint = value)
+      if (this.modelMode === AiModelMode.BACKEND_API) {
+        TextInput({ text: this.apiKey, placeholder: 'API Key（仅保存在本次运行内）' })
+          .height(48).onChange((value: string) => this.apiKey = value)
+        TextInput({ text: this.apiModel, placeholder: '模型名，例如 openai/gpt-oss-20b' })
+          .height(48).onChange((value: string) => this.apiModel = value)
+        Row({ space: 8 }) {
+          Button('本地后端').layoutWeight(1).height(40).backgroundColor('#24364E')
+            .onClick(() => {
+              this.apiEndpoint = 'http://127.0.0.1:8787';
+              this.apiKey = '';
+              this.checkApi();
+            })
+          Button('Groq 兼容').layoutWeight(1).height(40).backgroundColor('#24364E')
+            .onClick(() => {
+              this.apiEndpoint = 'https://api.groq.com/openai/v1';
+              this.apiModel = 'openai/gpt-oss-20b';
+            })
+        }.width('100%')
+        Text('支持 OpenAI 兼容接口：Groq、SiliconFlow、OpenRouter 等。密钥只放在设备内存中。')
+          .width('100%').fontSize(11).lineHeight(18).fontColor(this.palette().secondaryText)
+      }
       Button('检测后端健康状态').width('100%').height(46).backgroundColor('#12A69A')
         .onClick(() => this.checkApi())
       Text(this.apiStatus).width('100%').fontSize(12).fontColor('#5CE1D0')

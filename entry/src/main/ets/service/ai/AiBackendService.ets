@@ -17,6 +17,35 @@ interface BackendReply {
   steps?: Array<string>;
 }
 
+interface CompatibleMessage {
+  role: string;
+  content: string;
+}
+
+interface CompatibleChoice {
+  message?: CompatibleMessage;
+}
+
+interface CompatibleReply {
+  choices?: Array<CompatibleChoice>;
+  model?: string;
+}
+
+interface CompatibleRequest {
+  model: string;
+  messages: Array<CompatibleMessage>;
+  temperature: number;
+}
+
+interface LocalRequest {
+  prompt: string;
+}
+
+interface RequestHeaders {
+  'Content-Type'?: string;
+  Authorization?: string;
+}
+
 /**
  * 零费用、离线可运行的轻量开发诊断模型。
  * 它不是伪装成大语言模型，而是将本项目规则库、意图路由和报告模板组合为一个端侧 Mini 模型。
@@ -54,7 +83,10 @@ export class DevAssistMiniModel {
 }
 
 export class AiBackendService {
-  private endpoint: string = 'http://10.0.2.2:8787';
+  // The emulator connects to the host through `hdc rport tcp:8787 tcp:8787`.
+  private endpoint: string = 'http://127.0.0.1:8787';
+  private apiKey: string = '';
+  private apiModel: string = 'openai/gpt-oss-20b';
   private localModel: DevAssistMiniModel = new DevAssistMiniModel();
 
   setEndpoint(endpoint: string): void {
@@ -66,6 +98,20 @@ export class AiBackendService {
 
   getEndpoint(): string {
     return this.endpoint;
+  }
+
+  setApiKey(value: string): void {
+    this.apiKey = value.trim();
+  }
+
+  setModel(value: string): void {
+    if (value.trim().length > 0) {
+      this.apiModel = value.trim();
+    }
+  }
+
+  getModel(): string {
+    return this.apiModel;
   }
 
   chat(prompt: string, modelMode: AiModelMode): Promise<AiReply> {
@@ -85,8 +131,12 @@ export class AiBackendService {
   async healthCheck(): Promise<boolean> {
     const client = http.createHttp();
     try {
-      const response = await client.request(`${this.endpoint}/health`, {
+      const path = this.apiKey.length > 0 ? '/models' : '/health';
+      const headers: RequestHeaders = this.apiKey.length > 0 ?
+        { Authorization: `Bearer ${this.apiKey}` } : {};
+      const response = await client.request(`${this.endpoint}${path}`, {
         method: http.RequestMethod.GET,
+        header: headers,
         connectTimeout: 1500,
         readTimeout: 2500
       });
@@ -101,15 +151,40 @@ export class AiBackendService {
   private async call(path: string, prompt: string, agentMode: boolean): Promise<AiReply> {
     const client = http.createHttp();
     try {
-      const response = await client.request(`${this.endpoint}${path}`, {
+      const compatible = this.apiKey.length > 0;
+      const requestPath = compatible ? '/chat/completions' : path;
+      const messages: Array<CompatibleMessage> = [{
+        role: 'user',
+        content: agentMode ? `请作为开发 Agent 规划并执行任务：${prompt}` : prompt
+      }];
+      const requestBody: CompatibleRequest | LocalRequest = compatible ? {
+        model: this.apiModel,
+        messages: messages,
+        temperature: 0.2
+      } : { prompt: prompt };
+      const headers: RequestHeaders = compatible ? {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`
+      } : { 'Content-Type': 'application/json' };
+      const response = await client.request(`${this.endpoint}${requestPath}`, {
         method: http.RequestMethod.POST,
-        header: { 'Content-Type': 'application/json' },
-        extraData: JSON.stringify({ prompt: prompt }),
+        header: headers,
+        extraData: JSON.stringify(requestBody),
         connectTimeout: 1800,
         readTimeout: 5000
       });
-      if (response.responseCode >= 200 && response.responseCode < 300 && typeof response.result === 'string') {
-        const parsed = JSON.parse(response.result) as BackendReply;
+      if (response.responseCode >= 200 && response.responseCode < 300) {
+        const payload = typeof response.result === 'string' ? response.result : JSON.stringify(response.result);
+        if (compatible) {
+          const parsed = JSON.parse(payload) as CompatibleReply;
+          const text = parsed.choices?.[0]?.message?.content ?? '兼容 API 已响应，但没有返回文本。';
+          return {
+            text: text,
+            provider: `在线模型 · ${parsed.model ?? this.apiModel}`,
+            steps: agentMode ? ['在线模型：理解任务', 'Agent：生成计划', 'Verifier：请按计划验证结果'] : []
+          };
+        }
+        const parsed = JSON.parse(payload) as BackendReply;
         return {
           text: parsed.answer ?? 'API 已响应，但没有返回文本。',
           provider: parsed.provider ?? 'Developer Assistant API',

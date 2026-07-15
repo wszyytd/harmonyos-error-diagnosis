@@ -5,6 +5,8 @@ import { closeFlashControlWindow } from '../../service/window/WindowRuntime';
 @Component
 struct FlashControlWindow {
   @State private progress: number = 68;
+  @State private paused: boolean = false;
+  private progressTimer: number = -1;
   private readonly material: uiMaterial.ImmersiveMaterial = new uiMaterial.ImmersiveMaterial({
     style: uiMaterial.ImmersiveStyle.THIN,
     materialColor: '#331A3355',
@@ -15,6 +17,21 @@ struct FlashControlWindow {
 
   private async closeWindow(): Promise<void> {
     await closeFlashControlWindow();
+  }
+
+  aboutToAppear(): void {
+    this.progressTimer = setInterval(() => {
+      if (!this.paused && this.progress < 100) {
+        this.progress = Math.min(100, this.progress + 1);
+      }
+    }, 900);
+  }
+
+  aboutToDisappear(): void {
+    if (this.progressTimer >= 0) {
+      clearInterval(this.progressTimer);
+      this.progressTimer = -1;
+    }
   }
 
   build() {
@@ -30,11 +47,16 @@ struct FlashControlWindow {
       }.width('100%')
       Progress({ value: this.progress, total: 100, type: ProgressType.Linear })
         .width('100%').height(12).color('#5B8CFF').backgroundColor('#24364E')
-      Text(`正在分析构建日志 · ${this.progress}%`).width('100%').fontSize(16).fontColor('#F4F7FC')
+      Text(`${this.paused ? '诊断已暂停' : (this.progress >= 100 ? '诊断已完成' : '正在分析构建日志')} · ${this.progress}%`)
+        .width('100%').fontSize(16).fontColor('#F4F7FC')
       Row({ space: 12 }) {
         Button('继续').layoutWeight(1).height(46).backgroundColor('#5B8CFF')
-          .onClick(() => this.progress = Math.min(100, this.progress + 8))
-        Button('暂停').layoutWeight(1).height(46).backgroundColor('#1B304A')
+          .onClick(() => {
+            this.paused = false;
+            this.progress = Math.min(100, this.progress + 8);
+          })
+        Button(this.paused ? '恢复' : '暂停').layoutWeight(1).height(46).backgroundColor('#1B304A')
+          .onClick(() => this.paused = !this.paused)
       }.width('100%')
       Button('关闭闪控窗').width('100%').height(46).backgroundColor('#B42318').borderRadius(14)
         .onClick(() => this.closeWindow())
