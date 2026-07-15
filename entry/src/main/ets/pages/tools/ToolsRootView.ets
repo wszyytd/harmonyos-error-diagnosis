@@ -10,7 +10,10 @@ import {
 } from '../../service/ai/AiBackendService';
 import { HarmonyAgentAdapter } from '../../service/ai/HarmonyAgentAdapter';
 import { VisionAiAdapter } from '../../service/ai/VisionAiAdapter';
-import { openFlashControlWindow } from '../../service/window/WindowRuntime';
+import {
+  closeFlashControlWindow,
+  openFlashControlWindow
+} from '../../service/window/WindowRuntime';
 import { AppStateStore } from '../../store/AppStateStore';
 import { EffectiveTheme, getThemePalette, ThemePalette } from '../../theme/ThemeModels';
 
@@ -156,6 +159,11 @@ export struct ToolsRootView {
     this.windowStatus = await openFlashControlWindow();
   }
 
+  private async closeWindow(): Promise<void> {
+    this.windowStatus = '正在关闭闪控子窗…';
+    this.windowStatus = await closeFlashControlWindow();
+  }
+
   @Builder
   private tab(label: string, index: number) {
     Button(label)
@@ -292,8 +300,12 @@ export struct ToolsRootView {
       Text('闪控窗').width('100%').fontSize(18).fontWeight(FontWeight.Bold).fontColor(this.palette().primaryText)
       Text('使用 WindowStage 创建真实应用子窗，展示持续诊断进度；支持窗口拖动和独立内容。')
         .width('100%').fontSize(13).lineHeight(21).fontColor(this.palette().secondaryText)
-      Button('打开诊断闪控子窗').width('100%').height(50).backgroundColor('#5B8CFF').borderRadius(14)
-        .onClick(() => this.openWindow())
+      Row({ space: 12 }) {
+        Button('打开闪控窗').layoutWeight(1).height(50).backgroundColor('#5B8CFF').borderRadius(14)
+          .onClick(() => this.openWindow())
+        Button('关闭闪控窗').layoutWeight(1).height(50).backgroundColor('#B42318').borderRadius(14)
+          .onClick(() => this.closeWindow())
+      }.width('100%')
       Text(this.windowStatus).width('100%').fontSize(12).fontColor('#5CE1D0')
       Text('说明：系统级闪控球/全局悬浮窗需要华为平台能力开通；本项目实现了可编译、可运行的应用子窗适配层。')
         .width('100%').fontSize(11).lineHeight(19).fontColor(this.palette().secondaryText)

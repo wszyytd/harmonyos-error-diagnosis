@@ -33,15 +33,18 @@ export async function openFlashControlWindow(): Promise<string> {
   }
 }
 
-export async function closeFlashControlWindow(): Promise<void> {
+export async function closeFlashControlWindow(): Promise<string> {
   if (flashWindow === undefined) {
-    return;
+    return '闪控子窗当前未打开';
   }
   try {
     await flashWindow.destroyWindow();
   } catch (_) {
+    flashWindow = undefined;
+    return '闪控子窗已关闭';
   }
   flashWindow = undefined;
+  return '闪控子窗已关闭';
 }
 
 export function disposeWindowRuntime(): void {

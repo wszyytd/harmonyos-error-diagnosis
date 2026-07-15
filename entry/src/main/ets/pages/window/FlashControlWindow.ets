@@ -1,4 +1,5 @@
 import { uiMaterial } from '@kit.ArkUI';
+import { closeFlashControlWindow } from '../../service/window/WindowRuntime';
 
 @Entry
 @Component
@@ -11,6 +12,10 @@ struct FlashControlWindow {
     interactive: true,
     lightEffect: { color: '#8AB4FF' }
   });
+
+  private async closeWindow(): Promise<void> {
+    await closeFlashControlWindow();
+  }
 
   build() {
     Column({ space: 18 }) {
@@ -31,6 +36,8 @@ struct FlashControlWindow {
           .onClick(() => this.progress = Math.min(100, this.progress + 8))
         Button('暂停').layoutWeight(1).height(46).backgroundColor('#1B304A')
       }.width('100%')
+      Button('关闭闪控窗').width('100%').height(46).backgroundColor('#B42318').borderRadius(14)
+        .onClick(() => this.closeWindow())
       Text('标准系统闪控球需要平台能力开通；此处使用真实 WindowStage 子窗完成可运行演示。')
         .fontSize(12).lineHeight(20).fontColor('#91A0B8')
     }
