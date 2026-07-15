@@ -32,7 +32,7 @@ npm test
 npm start
 ```
 
-默认端口 `8787`，提供 `/health`、`/api/models`、`/api/chat`、`/api/agent/run` 和 `/api/vision/analyze`。HarmonyOS 模拟器访问宿主机时，应用默认使用 `http://10.0.2.2:8787`；API 不可达会自动降级到免费端侧模型。
+默认端口 `8787`，提供 `/health`、`/api/models`、`/api/chat`、`/api/agent/run` 和 `/api/vision/analyze`。先执行 `backend/start-emulator-api.ps1` 建立 HDC 端口转发，应用使用 `http://127.0.0.1:8787`；API 不可达会自动降级到免费端侧模型。详细操作见 `docs/项目使用与开发手册.md`。
 
 ## 开发环境
 
