@@ -3,6 +3,7 @@ import { AsyncStatePanel } from '../../components/common/AsyncStatePanel';
 import { ReportSectionCard } from '../../components/report/ReportSectionCard';
 import { DiagnosisReport } from '../../model/DiagnosisModels';
 import { OperationStatus } from '../../model/ResultModels';
+import { VisualEffectMode } from '../../model/SettingsModels';
 import { AppRouter } from '../../router/AppRouter';
 import { RouteName } from '../../router/RouteNames';
 import { ReportRouteParams } from '../../router/RouteModels';
@@ -46,7 +47,7 @@ export struct ReportPage {
   }
 
   private palette(): ThemePalette {
-    return getThemePalette(this.appState.effectiveTheme);
+    return getThemePalette(this.appState.effectiveTheme, this.appState.accentTheme);
   }
 
   private editInput(): void {
@@ -59,23 +60,23 @@ export struct ReportPage {
       Column({ space: 8 }) {
         Row({ space: 10 }) {
           Text('✓')
-            .fontSize(22)
+          .fontSize(22 * this.appState.contentFontMultiplier)
             .fontWeight(FontWeight.Bold)
             .fontColor(this.palette().accent)
             .accessibilityText('诊断已完成')
           Text(report.errorType)
             .layoutWeight(1)
-            .fontSize(28)
+          .fontSize(28 * this.appState.contentFontMultiplier)
             .fontWeight(FontWeight.Bold)
             .fontColor(this.palette().primaryText)
           Text($r('app.string.report_unsaved'))
-            .fontSize(14)
+          .fontSize(14 * this.appState.contentFontMultiplier)
             .fontColor(this.palette().accent)
         }
         .width('100%')
         Text(report.summary)
           .width('100%')
-          .fontSize(17)
+          .fontSize(17 * this.appState.contentFontMultiplier)
           .fontColor(this.palette().secondaryText)
       }
       .width('100%')
@@ -83,14 +84,17 @@ export struct ReportPage {
       .padding(16)
       .borderRadius(14)
       .backgroundColor(this.palette().focusSurface)
-      .backgroundBlurStyle(this.appState.effectiveTheme === EffectiveTheme.DARK ?
+      .backgroundBlurStyle(this.appState.visualEffectMode !== VisualEffectMode.OFF &&
+        this.appState.effectiveTheme === EffectiveTheme.DARK ?
         BlurStyle.Thin : BlurStyle.NONE)
-      .systemMaterial(this.appState.effectiveTheme === EffectiveTheme.LIGHT ?
+      .systemMaterial(this.appState.visualEffectMode !== VisualEffectMode.OFF &&
+        this.appState.effectiveTheme === EffectiveTheme.LIGHT ?
         this.lightFocusMaterial : undefined)
       .border({ width: 2, color: this.palette().focusBorder })
       .shadow({
-        radius: 24,
-        color: this.palette().focusGlow,
+        radius: this.appState.visualEffectMode === VisualEffectMode.FULL ? 24 :
+          (this.appState.visualEffectMode === VisualEffectMode.REDUCED ? 10 : 0),
+        color: this.appState.visualEffectMode === VisualEffectMode.OFF ? '#00000000' : this.palette().focusGlow,
         offsetX: 0,
         offsetY: 6
       })
@@ -115,13 +119,13 @@ export struct ReportPage {
 
       Column({ space: 10 }) {
         Text($r('app.string.report_original_text'))
-          .fontSize(20)
+          .fontSize(20 * this.appState.contentFontMultiplier)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.palette().primaryText)
         Text(report.rawText)
           .id('report_raw_text')
           .width('100%')
-          .fontSize(15)
+          .fontSize(15 * this.appState.contentFontMultiplier)
           .fontColor(this.palette().secondaryText)
           .maxLines(this.rawTextExpanded ? 20 : 4)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -174,7 +178,7 @@ export struct ReportPage {
         Column({ space: 16 }) {
           Text($r('app.string.route_report_title'))
             .width('100%')
-            .fontSize(28)
+            .fontSize(28 * this.appState.contentFontMultiplier)
             .fontWeight(FontWeight.Bold)
             .fontColor(this.palette().primaryText)
 

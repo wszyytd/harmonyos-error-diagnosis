@@ -16,7 +16,7 @@ export struct HistoryReportCard {
   onOpen: () => void = (): void => {};
 
   private palette(): ThemePalette {
-    return getThemePalette(this.appState.effectiveTheme);
+    return getThemePalette(this.appState.effectiveTheme, this.appState.accentTheme);
   }
 
   build() {
@@ -24,31 +24,31 @@ export struct HistoryReportCard {
       Row({ space: 8 }) {
         Text(this.item.errorType)
           .layoutWeight(1)
-          .fontSize(this.compact ? 16 : 18)
+          .fontSize((this.compact ? 16 : 18) * this.appState.contentFontMultiplier)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.palette().primaryText)
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
         Text(this.item.sourceLabel)
-          .fontSize(12)
+          .fontSize(12 * this.appState.contentFontMultiplier)
           .fontColor(this.palette().accent)
       }
       .width('100%')
 
       Text(this.item.summary)
         .width('100%')
-        .fontSize(14)
+          .fontSize(14 * this.appState.contentFontMultiplier)
         .fontColor(this.palette().secondaryText)
         .maxLines(this.compact ? 2 : 4)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
 
       Row() {
         Text(this.item.savedAtText)
-          .fontSize(12)
+          .fontSize(12 * this.appState.contentFontMultiplier)
           .fontColor(this.palette().secondaryText)
         Blank()
         Text($r('app.string.home_recent_open'))
-          .fontSize(13)
+          .fontSize(13 * this.appState.contentFontMultiplier)
           .fontWeight(FontWeight.Medium)
           .fontColor(this.palette().accent)
       }

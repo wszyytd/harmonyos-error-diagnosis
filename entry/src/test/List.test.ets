@@ -12,6 +12,7 @@ import diagnosisRuleResourceTest from './unit/DiagnosisRuleResource.test';
 import databaseConstantsTest from './unit/DatabaseConstants.test';
 import databaseManagerTest from './unit/DatabaseManager.test';
 import errorCodesTest from './unit/ErrorCodes.test';
+import floatingDockModelsTest from './unit/FloatingDockModels.test';
 import hiLogServiceTest from './unit/HiLogService.test';
 import homeViewModelTest from './unit/HomeViewModel.test';
 import homeModelsTest from './unit/HomeModels.test';
@@ -49,6 +50,7 @@ export default function testsuite() {
   databaseConstantsTest();
   databaseManagerTest();
   errorCodesTest();
+  floatingDockModelsTest();
   hiLogServiceTest();
   homeViewModelTest();
   homeModelsTest();

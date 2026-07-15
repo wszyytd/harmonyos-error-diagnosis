@@ -9,7 +9,12 @@ import {
 } from '../../domain/diagnosis/DiagnosisService';
 import { RuleMatcher } from '../../domain/diagnosis/RuleMatcher';
 import { InputValidationService } from '../../domain/validation/InputValidationService';
-import { ThemeMode } from '../../model/SettingsModels';
+import {
+  AccentTheme,
+  ContentFontScale,
+  ThemeMode,
+  VisualEffectMode
+} from '../../model/SettingsModels';
 import { DiagnosisRuleResourceLoader } from '../../repository/static/DiagnosisRuleResourceLoader';
 import { HttpStatusResourceLoader } from '../../repository/static/HttpStatusResourceLoader';
 import {
@@ -199,6 +204,17 @@ export function switchApplicationTheme(themeMode: ThemeMode): Promise<boolean> {
     return Promise.resolve(false);
   }
   return settingsViewModel.switchTheme(themeMode);
+}
+
+export function updateApplicationVisualPreferences(
+  accentTheme: AccentTheme,
+  contentFontScale: ContentFontScale,
+  visualEffectMode: VisualEffectMode
+): Promise<boolean> {
+  if (settingsViewModel === undefined) {
+    return Promise.resolve(false);
+  }
+  return settingsViewModel.updateVisualPreferences(accentTheme, contentFontScale, visualEffectMode);
 }
 
 export function resetApplicationSettings(): Promise<boolean> {
