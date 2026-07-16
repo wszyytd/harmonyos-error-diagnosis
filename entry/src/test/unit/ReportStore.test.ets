@@ -105,6 +105,18 @@ export default function reportStoreTest() {
       expect(database.rows.length).assertEqual(0);
     });
 
+    it('persists favorite changes and reports a missing record', 0, async () => {
+      const database = new FakeReportDatabaseStore();
+      const reportStore = store(database);
+      await reportStore.insert(report());
+
+      expect((await reportStore.updateFavorite('synthetic-report-store-001', true)).data).assertTrue();
+      expect((await reportStore.getById('synthetic-report-store-001')).data?.isFavorite).assertTrue();
+      expect((await reportStore.updateFavorite('synthetic-report-store-001', false)).data).assertTrue();
+      expect((await reportStore.getById('synthetic-report-store-001')).data?.isFavorite).assertFalse();
+      expect((await reportStore.updateFavorite('synthetic-missing', true)).data).assertFalse();
+    });
+
     it('maps insert query and delete platform failures to existing storage codes', 0, async () => {
       const database = new FakeReportDatabaseStore();
       database.failureStage = ReportDatabaseFailureStage.INSERT;

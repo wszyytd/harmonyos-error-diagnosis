@@ -142,6 +142,24 @@ export class ReportStore implements ReportDataStore {
     }
   }
 
+  async updateFavorite(reportId: string, favorite: boolean): Promise<AppResult<boolean>> {
+    if (this.database === undefined) {
+      return this.failure<boolean>(ErrorCode.STORAGE_WRITE_FAILED, 'favorite_unavailable');
+    }
+    try {
+      const count = await this.database.update({
+        tableName: DIAGNOSIS_REPORT_TABLE,
+        filterColumn: 'id',
+        filterValue: reportId
+      }, {
+        is_favorite: favorite ? 1 : 0
+      });
+      return createSuccessResult<boolean>(count > 0);
+    } catch (_) {
+      return this.failure<boolean>(ErrorCode.STORAGE_WRITE_FAILED, 'favorite');
+    }
+  }
+
   async clearAll(): Promise<AppResult<number>> {
     if (this.database === undefined) {
       return this.failure<number>(ErrorCode.STORAGE_DELETE_FAILED, 'clear_unavailable');

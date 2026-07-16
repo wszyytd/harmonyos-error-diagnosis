@@ -2,6 +2,7 @@ import {
   DatabaseQuerySpec,
   DatabaseResultSet,
   DatabaseStore,
+  DatabaseUpdateValues,
   DatabaseValue,
   DatabaseValues
 } from '../../main/ets/storage/database/DatabaseManager';
@@ -11,6 +12,7 @@ export enum ReportDatabaseFailureStage {
   INSERT = 'INSERT',
   QUERY = 'QUERY',
   DELETE = 'DELETE',
+  UPDATE = 'UPDATE',
   RESULT_READ = 'RESULT_READ'
 }
 
@@ -144,5 +146,19 @@ export class FakeReportDatabaseStore implements DatabaseStore {
         valueAt(row, filterColumn) !== spec.filterValue);
     }
     return Promise.resolve(before - this.rows.length);
+  }
+
+  update(spec: DatabaseQuerySpec, values: DatabaseUpdateValues): Promise<number> {
+    if (this.failureStage === ReportDatabaseFailureStage.UPDATE) {
+      return Promise.reject(new Error('Synthetic update failure at /data/private.db'));
+    }
+    let count: number = 0;
+    this.rows.forEach((row: DatabaseValues): void => {
+      if (spec.filterColumn !== undefined && valueAt(row, spec.filterColumn) === spec.filterValue) {
+        row.is_favorite = values.is_favorite;
+        count++;
+      }
+    });
+    return Promise.resolve(count);
   }
 }

@@ -37,6 +37,10 @@ export interface DatabaseValues {
   engine_version: string;
 }
 
+export interface DatabaseUpdateValues {
+  is_favorite: number;
+}
+
 export interface DatabaseQuerySpec {
   tableName: string;
   filterColumn?: string;
@@ -64,6 +68,7 @@ export interface DatabaseStore {
   close(): Promise<void>;
   insert(tableName: string, values: DatabaseValues): Promise<number>;
   query(spec: DatabaseQuerySpec, columns: Array<string>): Promise<DatabaseResultSet>;
+  update(spec: DatabaseQuerySpec, values: DatabaseUpdateValues): Promise<number>;
   delete(spec: DatabaseQuerySpec): Promise<number>;
 }
 
@@ -159,6 +164,16 @@ class HarmonyDatabaseStore implements DatabaseStore {
       return new HarmonyDatabaseResultSet(resultSet);
     } catch (_) {
       throw new Error('DATABASE_QUERY_FAILED');
+    }
+  }
+
+  async update(spec: DatabaseQuerySpec, values: DatabaseUpdateValues): Promise<number> {
+    try {
+      const bucket: relationalStore.ValuesBucket = {};
+      bucket['is_favorite'] = values.is_favorite;
+      return await this.store.update(bucket, this.createPredicates(spec));
+    } catch (_) {
+      throw new Error('DATABASE_UPDATE_FAILED');
     }
   }
 

@@ -9,6 +9,7 @@ export interface HomeReportItem {
   summary: string;
   savedAtText: string;
   sourceLabel: string;
+  isFavorite: boolean;
   accessibilityText: string;
 }
 
@@ -44,7 +45,9 @@ export function createHomeReportItem(report: DiagnosisReport): HomeReportItem {
     summary: summary,
     savedAtText: savedAtText,
     sourceLabel: sourceLabel,
-    accessibilityText: `${errorType}，${summary}，${savedAtText}，${sourceLabel}`
+    isFavorite: report.isFavorite,
+    accessibilityText: `${errorType}，${summary}，${savedAtText}，${sourceLabel}，` +
+      `${report.isFavorite ? '已收藏' : '未收藏'}`
   };
 }
 
@@ -55,6 +58,7 @@ export function copyHomeReportItems(items: Array<HomeReportItem>): Array<HomeRep
     summary: item.summary,
     savedAtText: item.savedAtText,
     sourceLabel: item.sourceLabel,
+    isFavorite: item.isFavorite,
     accessibilityText: item.accessibilityText
   }));
 }

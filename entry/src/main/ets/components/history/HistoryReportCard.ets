@@ -15,7 +15,11 @@ export struct HistoryReportCard {
   compact: boolean = true;
   @Prop
   idPrefix: string = 'home_recent_report';
+  @Prop
+  showActions: boolean = false;
   onOpen: () => void = (): void => {};
+  onFavorite: () => void = (): void => {};
+  onDelete: () => void = (): void => {};
 
   private palette(): ThemePalette {
     return getThemePalette(this.appState.effectiveTheme, this.appState.accentTheme);
@@ -53,8 +57,25 @@ export struct HistoryReportCard {
           .fontSize(13 * this.appState.contentFontMultiplier)
           .fontWeight(FontWeight.Medium)
           .fontColor(this.palette().accent)
+          .onClick((): void => { this.onOpen(); })
       }
       .width('100%')
+
+      if (this.showActions) {
+        Row({ space: 10 }) {
+          Button(this.item.isFavorite ? '取消收藏' : '收藏')
+            .layoutWeight(1)
+            .constraintSize({ minHeight: 44 })
+            .fontColor(this.palette().accent)
+            .onClick((): void => { this.onFavorite(); })
+          Button('删除')
+            .layoutWeight(1)
+            .constraintSize({ minHeight: 44 })
+            .fontColor(this.palette().error)
+            .onClick((): void => { this.onDelete(); })
+        }
+        .width('100%')
+      }
     }
     .width('100%')
     .constraintSize({ minHeight: 88 })
@@ -66,6 +87,10 @@ export struct HistoryReportCard {
     .accessibilityGroup(true)
     .accessibilityText(this.item.accessibilityText)
     .accessibilityDescription($r('app.string.home_recent_open_accessibility'))
-    .onClick(() => this.onOpen())
+    .onClick((): void => {
+      if (!this.showActions) {
+        this.onOpen();
+      }
+    })
   }
 }

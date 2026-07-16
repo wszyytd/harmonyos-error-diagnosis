@@ -3,6 +3,7 @@ import {
   DatabaseResultSet,
   DatabaseStore,
   DatabaseStoreProvider,
+  DatabaseUpdateValues,
   DatabaseValues
 } from '../../main/ets/storage/database/DatabaseManager';
 
@@ -89,6 +90,10 @@ export class FakeDatabaseStore implements DatabaseStore {
 
   query(_spec: DatabaseQuerySpec, _columns: Array<string>): Promise<DatabaseResultSet> {
     return Promise.reject(new Error('Synthetic report query is not configured for schema tests'));
+  }
+
+  update(_spec: DatabaseQuerySpec, _values: DatabaseUpdateValues): Promise<number> {
+    return Promise.reject(new Error('Synthetic report update is not configured for schema tests'));
   }
 
   delete(_spec: DatabaseQuerySpec): Promise<number> {

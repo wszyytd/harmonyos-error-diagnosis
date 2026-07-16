@@ -169,6 +169,18 @@ export class LocalReportRepository implements ReportRepository {
     return createSuccessResult<boolean>(result.data);
   }
 
+  async updateFavorite(reportId: string, favorite: boolean): Promise<AppResult<boolean>> {
+    if (!validReportId(reportId)) {
+      return this.failure<boolean>(ErrorCode.VAL_FORMAT_INVALID, 'favorite_id', false);
+    }
+    const result = await this.store.updateFavorite(reportId, favorite);
+    if (!result.success || result.data === undefined) {
+      return this.forwardFailure<boolean, boolean>(result, ErrorCode.STORAGE_WRITE_FAILED, 'favorite');
+    }
+    this.log(LogLevel.INFO, 'report_favorite_updated', 'success', undefined, result.data ? 1 : 0);
+    return createSuccessResult<boolean>(result.data);
+  }
+
   async clearAll(): Promise<AppResult<number>> {
     const result = await this.store.clearAll();
     if (!result.success || result.data === undefined) {

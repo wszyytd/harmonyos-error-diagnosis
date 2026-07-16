@@ -105,5 +105,43 @@ export default function historyViewModelTest() {
       expect(viewModel.historyStatus).assertEqual(OperationStatus.CANCELLED);
       expect(viewModel.historyReports.length).assertEqual(0);
     });
+
+    it('deletes one report and clears the remaining history', 0, async () => {
+      const repository = new FakeReportRepository();
+      repository.listResult = createSuccessResult([
+        createReportFixture('history-delete', 1, 300),
+        createReportFixture('history-clear', 1, 200)
+      ]);
+      repository.clearResult = createSuccessResult(1);
+      const viewModel = new HistoryViewModel(repository, new AppRouter(new FakeNavigationStack()));
+      await viewModel.loadHistory();
+
+      expect(await viewModel.deleteReport('history-delete')).assertTrue();
+      expect(repository.deletedReportId).assertEqual('history-delete');
+      expect(viewModel.historyReports.length).assertEqual(1);
+      expect(await viewModel.clearHistory()).assertTrue();
+      expect(repository.clearCallCount).assertEqual(1);
+      expect(viewModel.isHistoryEmpty).assertTrue();
+    });
+
+    it('persists favorite state and preserves it when persistence fails', 0, async () => {
+      const repository = new FakeReportRepository();
+      repository.listResult = createSuccessResult([
+        createReportFixture('history-favorite', 1, 300, false)
+      ]);
+      const viewModel = new HistoryViewModel(repository, new AppRouter(new FakeNavigationStack()));
+      await viewModel.loadHistory();
+
+      expect(await viewModel.toggleFavorite('history-favorite', true)).assertTrue();
+      expect(viewModel.historyReports[0].isFavorite).assertTrue();
+      repository.favoriteResult = createFailureResult({
+        code: ErrorCode.STORAGE_WRITE_FAILED,
+        message: 'Synthetic private favorite failure',
+        retryable: true
+      });
+      expect(await viewModel.toggleFavorite('history-favorite', false)).assertFalse();
+      expect(viewModel.historyReports[0].isFavorite).assertTrue();
+      expect(viewModel.mutationStatus).assertEqual(OperationStatus.ERROR);
+    });
   });
 }
