@@ -109,6 +109,15 @@ function saveError(error: AppError | undefined): AppError {
   };
 }
 
+function favoriteError(): AppError {
+  return {
+    code: ErrorCode.STORAGE_WRITE_FAILED,
+    message: '收藏状态更新失败，请重试。',
+    retryable: true,
+    causeType: 'REPORT_FAVORITE'
+  };
+}
+
 /** Owns report loading and saving without exposing Repository operations to the page. */
 @Observed
 export class ReportViewModel {
@@ -121,6 +130,7 @@ export class ReportViewModel {
   private currentReport?: DiagnosisReport;
   private operationState: OperationState;
   private saveOperationState: OperationState = { status: OperationStatus.IDLE };
+  private favoriteOperationState: OperationState = { status: OperationStatus.IDLE };
   private disposed: boolean = false;
   private lifecycleGeneration: number = 0;
 
@@ -194,6 +204,14 @@ export class ReportViewModel {
     return this.currentReport?.savedAt !== undefined;
   }
 
+  get favoriteOperation(): OperationState {
+    return copyOperation(this.favoriteOperationState);
+  }
+
+  get favoriteError(): AppError | undefined {
+    return copyError(this.favoriteOperationState.error);
+  }
+
   get hasEditableSession(): boolean {
     return this.hasActiveSession();
   }
@@ -263,6 +281,38 @@ export class ReportViewModel {
     return true;
   }
 
+  async toggleFavorite(): Promise<boolean> {
+    if (this.disposed || this.currentReport === undefined || !this.isSaved ||
+      this.favoriteOperationState.status === OperationStatus.LOADING) {
+      return false;
+    }
+    const generation = this.lifecycleGeneration;
+    const target = !this.currentReport.isFavorite;
+    this.favoriteOperationState = { status: OperationStatus.LOADING };
+    let result: AppResult<boolean>;
+    try {
+      result = await this.repository.updateFavorite(this.currentReport.id, target);
+    } catch (_) {
+      result = { success: false, error: favoriteError() };
+    }
+    if (this.disposed || generation !== this.lifecycleGeneration) {
+      return false;
+    }
+    if (!result.success || result.data !== true) {
+      this.favoriteOperationState = createErrorOperationState(favoriteError());
+      return false;
+    }
+    this.currentReport.isFavorite = target;
+    this.favoriteOperationState = { status: OperationStatus.SUCCESS };
+    if (this.onReportSaved !== undefined) {
+      try {
+        await this.onReportSaved();
+      } catch (_) {
+      }
+    }
+    return true;
+  }
+
   editInput(): boolean {
     if (!this.hasActiveSession()) {
       return false;
@@ -289,6 +339,9 @@ export class ReportViewModel {
     }
     if (this.saveOperationState.status === OperationStatus.LOADING) {
       this.saveOperationState = { status: OperationStatus.CANCELLED };
+    }
+    if (this.favoriteOperationState.status === OperationStatus.LOADING) {
+      this.favoriteOperationState = { status: OperationStatus.CANCELLED };
     }
   }
 

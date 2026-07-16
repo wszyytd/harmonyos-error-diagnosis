@@ -73,6 +73,11 @@ export struct ReportPage {
     this.reportSnapshot = this.viewModel?.report;
   }
 
+  private async toggleFavorite(): Promise<void> {
+    await this.viewModel?.toggleFavorite();
+    this.reportSnapshot = this.viewModel?.report;
+  }
+
   @Builder
   private reportContent(report: DiagnosisReport) {
     Column({ space: 16 }) {
@@ -174,6 +179,22 @@ export struct ReportPage {
           .onClick((): void => {
             this.saveReport();
           })
+        if (this.viewModel?.isSaved) {
+          Button(report.isFavorite ? '取消收藏' : '收藏报告')
+            .id('report_favorite')
+            .width('100%')
+            .constraintSize({ minHeight: 48 })
+            .fontColor(this.palette().accent)
+            .enabled(this.viewModel.favoriteOperation.status !== OperationStatus.LOADING)
+            .onClick((): void => { this.toggleFavorite(); })
+          if (this.viewModel.favoriteOperation.status === OperationStatus.ERROR) {
+            InlineErrorNotice({
+              message: this.viewModel.favoriteError?.message ?? '收藏状态更新失败，请重试。',
+              actionLabel: '重试',
+              onAction: (): void => { this.toggleFavorite(); }
+            })
+          }
+        }
         if (this.viewModel?.saveOperation.status === OperationStatus.ERROR) {
           InlineErrorNotice({
             message: this.viewModel.saveError?.message ?? '保存失败，当前报告已保留，请重试。',

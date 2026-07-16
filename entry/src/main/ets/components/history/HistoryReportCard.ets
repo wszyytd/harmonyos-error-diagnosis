@@ -57,6 +57,7 @@ export struct HistoryReportCard {
           .fontSize(13 * this.appState.contentFontMultiplier)
           .fontWeight(FontWeight.Medium)
           .fontColor(this.palette().accent)
+          .onClick((): void => { this.onOpen(); })
       }
       .width('100%')
 
@@ -66,18 +67,12 @@ export struct HistoryReportCard {
             .layoutWeight(1)
             .constraintSize({ minHeight: 44 })
             .fontColor(this.palette().accent)
-            .onClick((event: ClickEvent): void => {
-              event.stopPropagation();
-              this.onFavorite();
-            })
+            .onClick((): void => { this.onFavorite(); })
           Button('删除')
             .layoutWeight(1)
             .constraintSize({ minHeight: 44 })
             .fontColor(this.palette().error)
-            .onClick((event: ClickEvent): void => {
-              event.stopPropagation();
-              this.onDelete();
-            })
+            .onClick((): void => { this.onDelete(); })
         }
         .width('100%')
       }
@@ -92,6 +87,10 @@ export struct HistoryReportCard {
     .accessibilityGroup(true)
     .accessibilityText(this.item.accessibilityText)
     .accessibilityDescription($r('app.string.home_recent_open_accessibility'))
-    .onClick(() => this.onOpen())
+    .onClick((): void => {
+      if (!this.showActions) {
+        this.onOpen();
+      }
+    })
   }
 }

@@ -240,5 +240,40 @@ export default function reportViewModelTest() {
       expect(await viewModel.loadReport()).assertTrue();
       expect(viewModel.report?.id).assertEqual('history-retry');
     });
+
+    it('updates favorite state only after persistence succeeds', 0, async () => {
+      const repository = new FakeReportRepository();
+      repository.getByIdResult = createSuccessResult(createReportFixture('history-favorite', 1, 2, false));
+      const viewModel = new ReportViewModel(
+        createStore(false), repository, new AppRouter(new FakeNavigationStack()),
+        { reportId: 'history-favorite', origin: RouteName.HISTORY_SETTINGS }
+      );
+      await viewModel.loadReport();
+
+      expect(await viewModel.toggleFavorite()).assertTrue();
+      expect(repository.favoriteReportId).assertEqual('history-favorite');
+      expect(repository.favoriteValue).assertTrue();
+      expect(viewModel.report?.isFavorite).assertTrue();
+      expect(viewModel.favoriteOperation.status).assertEqual(OperationStatus.SUCCESS);
+    });
+
+    it('keeps favorite state unchanged when persistence fails', 0, async () => {
+      const repository = new FakeReportRepository();
+      repository.getByIdResult = createSuccessResult(createReportFixture('history-retained', 1, 2, true));
+      repository.favoriteResult = createFailureResult({
+        code: ErrorCode.STORAGE_WRITE_FAILED,
+        message: 'Synthetic private favorite failure',
+        retryable: true
+      });
+      const viewModel = new ReportViewModel(
+        createStore(false), repository, new AppRouter(new FakeNavigationStack()),
+        { reportId: 'history-retained', origin: RouteName.HISTORY_SETTINGS }
+      );
+      await viewModel.loadReport();
+
+      expect(await viewModel.toggleFavorite()).assertFalse();
+      expect(viewModel.report?.isFavorite).assertTrue();
+      expect(viewModel.favoriteOperation.status).assertEqual(OperationStatus.ERROR);
+    });
   });
 }
