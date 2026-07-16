@@ -3,6 +3,26 @@
     {
       "name": "start_window_background",
       "value": "#000000"
+    },
+    {
+      "name": "form_card_background",
+      "value": "#242A30"
+    },
+    {
+      "name": "form_card_primary",
+      "value": "#F2F5F7"
+    },
+    {
+      "name": "form_card_secondary",
+      "value": "#C3CCD5"
+    },
+    {
+      "name": "form_card_accent",
+      "value": "#8FA6BF"
+    },
+    {
+      "name": "form_card_on_accent",
+      "value": "#17212B"
     }
   ]
 }

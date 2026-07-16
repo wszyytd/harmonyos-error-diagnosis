@@ -343,6 +343,14 @@
     {
       "name": "common_confirm_cancel_accessibility",
       "value": "取消当前操作，不执行确认"
+    },
+    {
+      "name": "quick_diagnosis_form_name",
+      "value": "快速诊断"
+    },
+    {
+      "name": "quick_diagnosis_form_description",
+      "value": "从桌面打开开发报错诊断助手"
     }
   ]
 }

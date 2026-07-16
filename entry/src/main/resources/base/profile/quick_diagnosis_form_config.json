@@ -1,0 +1,24 @@
+{
+  "forms": [
+    {
+      "name": "quick_diagnosis",
+      "displayName": "$string:quick_diagnosis_form_name",
+      "description": "$string:quick_diagnosis_form_description",
+      "src": "./ets/form/pages/QuickDiagnosisCard.ets",
+      "uiSyntax": "arkts",
+      "isDynamic": true,
+      "colorMode": "auto",
+      "isDefault": true,
+      "updateEnabled": false,
+      "defaultDimension": "2*4",
+      "supportDimensions": [
+        "2*4"
+      ],
+      "fontScaleFollowSystem": true,
+      "supportDeviceTypes": [
+        "phone",
+        "tablet"
+      ]
+    }
+  ]
+}
