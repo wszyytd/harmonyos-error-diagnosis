@@ -8,6 +8,10 @@ struct QuickDiagnosisCard {
   @LocalStorageProp('description') description: string = '从桌面进入本地报错分析';
   @LocalStorageProp('actionLabel') actionLabel: string = '打开应用';
   @LocalStorageProp('privacyHint') privacyHint: string = '数据仅保存在本机';
+  @LocalStorageProp('hasReport') hasReport: boolean = false;
+  @LocalStorageProp('errorType') errorType: string = '暂无已保存报告';
+  @LocalStorageProp('reportSummary') reportSummary: string = '完成一次诊断并保存后显示';
+  @LocalStorageProp('savedAtText') savedAtText: string = '';
 
   build() {
     Column({ space: 8 }) {
@@ -23,10 +27,27 @@ struct QuickDiagnosisCard {
         .fontColor($r('app.color.form_card_primary'))
         .width('100%')
 
-      Text(this.description)
-        .fontSize(14)
+      Text(this.errorType)
+        .fontSize(16)
+        .fontWeight(FontWeight.Medium)
+        .fontColor($r('app.color.form_card_primary'))
+        .width('100%')
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+      Text(this.reportSummary)
+        .fontSize(13)
         .fontColor($r('app.color.form_card_secondary'))
         .width('100%')
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+      if (this.hasReport) {
+        Text(this.savedAtText)
+          .fontSize(11)
+          .fontColor($r('app.color.form_card_secondary'))
+          .width('100%')
+      }
 
       Blank()
 

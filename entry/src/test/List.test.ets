@@ -14,6 +14,7 @@ import databaseManagerTest from './unit/DatabaseManager.test';
 import errorCodesTest from './unit/ErrorCodes.test';
 import favoriteActionModelsTest from './unit/FavoriteActionModels.test';
 import formCardModelsTest from './unit/FormCardModels.test';
+import formCardRefreshServiceTest from './unit/FormCardRefreshService.test';
 import formProfileTest from './unit/FormProfile.test';
 import formSummaryModelsTest from './unit/FormSummaryModels.test';
 import formSummaryRepositoryTest from './unit/FormSummaryRepository.test';
@@ -59,6 +60,7 @@ export default function testsuite() {
   errorCodesTest();
   favoriteActionModelsTest();
   formCardModelsTest();
+  formCardRefreshServiceTest();
   formProfileTest();
   formSummaryModelsTest();
   formSummaryRepositoryTest();
