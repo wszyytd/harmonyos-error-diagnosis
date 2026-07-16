@@ -1,4 +1,9 @@
 import { AppStateStore } from '../../store/AppStateStore';
+import {
+  beginFavoriteToggle,
+  completeFavoriteToggle,
+  FavoriteToggleTransition
+} from '../common/FavoriteActionModels';
 import { GlassActionButton } from '../common/GlassActionButton';
 import { GlassActionStyle } from '../common/GlassActionButtonModels';
 import {
@@ -19,9 +24,29 @@ export struct HistoryReportCard {
   idPrefix: string = 'home_recent_report';
   @Prop
   showActions: boolean = false;
+  @State
+  private favoriteValue: boolean = false;
+  @State
+  private favoriteUpdating: boolean = false;
   onOpen: () => void = (): void => {};
-  onFavorite: () => void = (): void => {};
+  onFavorite: (favorite: boolean) => Promise<boolean> = async (): Promise<boolean> => false;
   onDelete: () => void = (): void => {};
+
+  aboutToAppear(): void {
+    this.favoriteValue = this.item.isFavorite;
+  }
+
+  private async toggleFavorite(): Promise<void> {
+    if (this.favoriteUpdating) {
+      return;
+    }
+    const transition: FavoriteToggleTransition = beginFavoriteToggle(this.favoriteValue);
+    this.favoriteUpdating = true;
+    this.favoriteValue = transition.pendingValue;
+    const succeeded: boolean = await this.onFavorite(transition.pendingValue);
+    this.favoriteValue = completeFavoriteToggle(transition, succeeded);
+    this.favoriteUpdating = false;
+  }
 
   private palette(): ThemePalette {
     return getThemePalette(this.appState.effectiveTheme, this.appState.accentTheme);
@@ -68,11 +93,12 @@ export struct HistoryReportCard {
       if (this.showActions) {
         Row({ space: 10 }) {
           GlassActionButton({
-            label: this.item.isFavorite ? '取消收藏' : '收藏',
+            label: this.favoriteValue ? '取消收藏' : '收藏',
             buttonId: `${this.idPrefix}_favorite_${this.item.reportId}`,
             buttonWidth: '48%',
+            loading: this.favoriteUpdating,
             actionStyle: GlassActionStyle.FAVORITE,
-            onAction: (): void => { this.onFavorite(); }
+            onAction: (): void => { this.toggleFavorite(); }
           })
           GlassActionButton({
             label: '删除',
