@@ -16,7 +16,8 @@ export enum ReportStoreFailureStage {
   INSERT = 'INSERT',
   LIST = 'LIST',
   DELETE = 'DELETE',
-  CLEAR = 'CLEAR'
+  CLEAR = 'CLEAR',
+  UPDATE_FAVORITE = 'UPDATE_FAVORITE'
 }
 
 function copyReport(report: DiagnosisReport): DiagnosisReport {
@@ -118,6 +119,18 @@ export class FakeReportStore implements ReportDataStore {
     const count = this.reports.length;
     this.reports = [];
     return createSuccessResult<number>(count);
+  }
+
+  async updateFavorite(reportId: string, favorite: boolean): Promise<AppResult<boolean>> {
+    if (this.failureStage === ReportStoreFailureStage.UPDATE_FAVORITE) {
+      return failure<boolean>(ErrorCode.STORAGE_WRITE_FAILED);
+    }
+    const found = this.reports.find((item: DiagnosisReport): boolean => item.id === reportId);
+    if (found === undefined) {
+      return createSuccessResult<boolean>(false);
+    }
+    found.isFavorite = favorite;
+    return createSuccessResult<boolean>(true);
   }
 }
 

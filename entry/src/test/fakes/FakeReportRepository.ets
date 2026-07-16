@@ -62,6 +62,10 @@ export class FakeReportRepository implements ReportRepository {
   listLimit: number = 0;
   deferredList?: DeferredReportResult;
   throwOnList: boolean = false;
+  favoriteResult: AppResult<boolean> = createSuccessResult<boolean>(true);
+  favoriteCallCount: number = 0;
+  favoriteReportId?: string;
+  favoriteValue?: boolean;
 
   async getRecent(limit: number): Promise<AppResult<Array<DiagnosisReport>>> {
     this.recentLimit = limit;
@@ -118,6 +122,13 @@ export class FakeReportRepository implements ReportRepository {
 
   async deleteById(reportId: string): Promise<AppResult<boolean>> {
     return createSuccessResult<boolean>(false);
+  }
+
+  async updateFavorite(reportId: string, favorite: boolean): Promise<AppResult<boolean>> {
+    this.favoriteCallCount++;
+    this.favoriteReportId = reportId;
+    this.favoriteValue = favorite;
+    return this.favoriteResult;
   }
 
   async clearAll(): Promise<AppResult<number>> {

@@ -146,6 +146,19 @@ export default function reportRepositoryTest() {
       expect(store.reports.length).assertEqual(0);
     });
 
+    it('updates a favorite without changing the saved report fields', 0, async () => {
+      const store = new FakeReportStore();
+      store.seed(createReportFixture('synthetic-favorite', 1, 2));
+      const repo = repository(store);
+
+      expect((await repo.updateFavorite('synthetic-favorite', true)).data).assertTrue();
+      const restored = await repo.getById('synthetic-favorite');
+      expect(restored.data?.isFavorite).assertTrue();
+      expect(restored.data?.savedAt).assertEqual(2);
+      expect(restored.data?.createdAt).assertEqual(1);
+      expect((await repo.updateFavorite(' ', false)).error?.code).assertEqual(ErrorCode.VAL_FORMAT_INVALID);
+    });
+
     it('does not evict when history is at the limit', 0, async () => {
       const store = new FakeReportStore();
       seedReports(store, HISTORY_RECORD_LIMIT);

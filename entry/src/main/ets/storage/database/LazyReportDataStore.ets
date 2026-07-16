@@ -44,6 +44,11 @@ export class LazyReportDataStore implements ReportDataStore {
     return store instanceof ReportStore ? store.deleteById(reportId) : store;
   }
 
+  async updateFavorite(reportId: string, favorite: boolean): Promise<AppResult<boolean>> {
+    const store = await this.resolveStore<boolean>(ErrorCode.STORAGE_WRITE_FAILED);
+    return store instanceof ReportStore ? store.updateFavorite(reportId, favorite) : store;
+  }
+
   async clearAll(): Promise<AppResult<number>> {
     const store = await this.resolveStore<number>(ErrorCode.STORAGE_DELETE_FAILED);
     return store instanceof ReportStore ? store.clearAll() : store;
