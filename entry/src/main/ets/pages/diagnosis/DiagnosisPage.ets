@@ -1,4 +1,3 @@
-import { uiMaterial } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { image } from '@kit.ImageKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
@@ -32,8 +31,6 @@ export struct DiagnosisPage {
   };
   @State
   viewModel: DiagnosisViewModel | undefined = undefined;
-  @State
-  startButtonScale: number = 1;
   @State
   ocrStatus: string = '选择报错截图，Core Vision Kit 会在设备端提取文字。';
   @State
@@ -247,67 +244,25 @@ export struct DiagnosisPage {
             }
 
             Column({ space: 10 }) {
-              Button($r('app.string.diagnosis_use_example'))
-                .id('diagnosis_use_example')
-                .width('100%')
-                .constraintSize({ minHeight: 48 })
-                .enabled(this.viewModel.diagnosisOperation.status !== OperationStatus.LOADING)
-                .fontColor('#FFFFFFFF')
-                .backgroundColor('#087F5B')
-                .onClick((): void => {
-                  this.viewModel?.useExample();
-                })
-              Button($r('app.string.diagnosis_start'))
-                .id('diagnosis_start')
-                .width('100%')
-                .constraintSize({ minHeight: 52 })
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#FFFFFFFF')
-                .backgroundColor('#172B4D')
-                .backgroundBlurStyle(this.appState.visualEffectMode !== VisualEffectMode.OFF &&
-                  this.appState.effectiveTheme === EffectiveTheme.DARK ?
-                  BlurStyle.Thin : BlurStyle.NONE)
-                .systemMaterial(this.appState.visualEffectMode !== VisualEffectMode.OFF &&
-                  this.appState.effectiveTheme === EffectiveTheme.LIGHT ?
-                  this.lightFocusMaterial : undefined)
-                .border({ width: 2, color: this.palette().focusBorder })
-                .borderRadius(14)
-                .shadow({
-                  radius: this.appState.visualEffectMode === VisualEffectMode.FULL ? 24 :
-                    (this.appState.visualEffectMode === VisualEffectMode.REDUCED ? 10 : 0),
-                  color: this.appState.visualEffectMode === VisualEffectMode.OFF ? '#00000000' :
-                    this.palette().focusGlow,
-                  offsetX: 0,
-                  offsetY: 6
-                })
-                .scale({
-                  x: this.appState.visualEffectMode === VisualEffectMode.OFF ? 1 : this.startButtonScale,
-                  y: this.appState.visualEffectMode === VisualEffectMode.OFF ? 1 : this.startButtonScale
-                })
-                .animation({
-                  duration: this.startButtonScale < 1 ? 100 : 180,
-                  curve: this.startButtonScale < 1 ? Curve.EaseOut : Curve.Friction
-                })
-                .enabled(this.viewModel.diagnosisOperation.status !== OperationStatus.LOADING)
-                .onTouch((event: TouchEvent): void => {
-                  if (event.type === TouchType.Down) {
-                    this.startButtonScale = 0.98;
-                  } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
-                    this.startButtonScale = 1;
-                  }
-                })
-                .onClick((): void => {
-                  this.diagnose();
-                })
-              Button(this.routeParams.origin === RouteName.HOME ?
-                $r('app.string.route_back_home') : $r('app.string.route_back_origin'))
-                .width('100%')
-                .constraintSize({ minHeight: 48 })
-                .fontColor('#FFFFFFFF')
-                .backgroundColor('#0A59F7')
-                .onClick((): void => {
-                  this.router.back();
-                })
+              GlassActionButton({
+                label: $r('app.string.diagnosis_use_example'),
+                buttonId: 'diagnosis_use_example',
+                actionEnabled: this.viewModel.diagnosisOperation.status !== OperationStatus.LOADING,
+                onAction: (): void => { this.viewModel?.useExample(); }
+              })
+              GlassActionButton({
+                label: $r('app.string.diagnosis_start'),
+                buttonId: 'diagnosis_start',
+                actionEnabled: this.viewModel.diagnosisOperation.status !== OperationStatus.LOADING,
+                loading: this.viewModel.diagnosisOperation.status === OperationStatus.LOADING,
+                onAction: (): void => { this.diagnose(); }
+              })
+              GlassActionButton({
+                label: this.routeParams.origin === RouteName.HOME ?
+                  $r('app.string.route_back_home') : $r('app.string.route_back_origin'),
+                buttonId: 'diagnosis_back',
+                onAction: (): void => { this.router.back(); }
+              })
             }
             .width('100%')
           }
