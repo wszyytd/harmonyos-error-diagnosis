@@ -22,16 +22,16 @@ export struct ToolsRootView {
   @Consume('appState')
   appState: AppStateStore;
   @State private activeTab: number = 0;
-  @State private modelMode: AiModelMode = AiModelMode.LOCAL_FREE;
+  @State private modelMode: AiModelMode = AiModelMode.BACKEND_API;
   @State private prompt: string = 'HarmonyOS 工程出现 ohpm package not found，应该怎样排查？';
-  @State private answer: string = '选择免费端侧模型或 API 模式，然后发送问题。';
-  @State private provider: string = 'READY';
+  @State private answer: string = '填写 API Key 后，发送内容会由真实在线模型生成。';
+  @State private provider: string = 'ONLINE API · WAITING FOR KEY';
   @State private steps: Array<string> = [];
   @State private busy: boolean = false;
-  @State private apiEndpoint: string = 'http://127.0.0.1:8787';
+  @State private apiEndpoint: string = 'https://api.groq.com/openai/v1';
   @State private apiKey: string = '';
   @State private apiModel: string = 'openai/gpt-oss-20b';
-  @State private apiStatus: string = '尚未检测';
+  @State private apiStatus: string = '等待填写 API Key 并检测真实模型连接';
   @State private agentId: string = '';
   @State private agentSupport: string = '输入平台注册的 Agent ID 后可检测系统能力';
   @State private skillResult: string = '选择一个 Skill 执行';
@@ -232,7 +232,7 @@ export struct ToolsRootView {
       Row({ space: 7 }) {
         Text('API 26').fontSize(10).fontWeight(FontWeight.Bold).fontColor('#5CE1D0')
         Text('LOCAL FIRST').fontSize(10).fontWeight(FontWeight.Bold).fontColor('#8AB4FF')
-        Text('FREE MODEL').fontSize(10).fontWeight(FontWeight.Bold).fontColor('#FFB36B')
+        Text('REAL MODEL API').fontSize(10).fontWeight(FontWeight.Bold).fontColor('#FFB36B')
       }.width('100%')
     }.width('100%').alignItems(HorizontalAlign.Start)
   }
@@ -265,13 +265,13 @@ export struct ToolsRootView {
   private aiPanel(agentMode: boolean) {
     Column({ space: 13 }) {
       Row({ space: 8 }) {
-        Button('免费端侧模型').layoutWeight(1).height(44)
+        Button('离线规则诊断').layoutWeight(1).height(44)
           .fontColor('#FFFFFFFF')
           .backgroundColor(this.modelMode === AiModelMode.LOCAL_FREE ? '#12A69A' : '#24364E')
           .onClick(() => {
             this.modelMode = AiModelMode.LOCAL_FREE;
-            this.provider = 'DevAssist Mini · Free Local Model';
-            this.answer = '当前为本地规则模型，适合离线诊断；如需通用问答，请选择在线 API 并填写 Key。';
+            this.provider = 'LOCAL RULE ENGINE · NOT GENERATIVE AI';
+            this.answer = '这是离线规则诊断，不是生成式 AI。它只识别内置错误类型；通用问答请选择在线 API 并填写 Key。';
             this.steps = [];
           })
         Button('在线 API').layoutWeight(1).height(44)
@@ -371,9 +371,13 @@ export struct ToolsRootView {
       Text('使用 WindowStage 创建真实应用子窗，展示持续诊断进度；支持窗口拖动和独立内容。')
         .width('100%').fontSize(13).lineHeight(21).fontColor(this.palette().secondaryText)
       Row({ space: 12 }) {
-        Button('打开闪控窗').layoutWeight(1).height(50).backgroundColor('#5B8CFF').borderRadius(14)
+        Button('打开独立诊断窗口').layoutWeight(1).height(50).fontColor('#FFFFFFFF')
+          .backgroundColor('#5B8CFF').borderRadius(14)
+          .linearGradient({ angle: 90, colors: [['#3977F6', 0], ['#7658E8', 1]] })
           .onClick(() => this.openWindow())
-        Button('关闭闪控窗').layoutWeight(1).height(50).backgroundColor('#B42318').borderRadius(14)
+        Button('关闭独立诊断窗口').layoutWeight(1).height(50).fontColor('#FFFFFFFF')
+          .backgroundColor('#B42318').borderRadius(14)
+          .linearGradient({ angle: 90, colors: [['#C53030', 0], ['#F06A3C', 1]] })
           .onClick(() => this.closeWindow())
       }.width('100%')
       Text(this.windowStatus).width('100%').fontSize(12).fontColor('#5CE1D0')
@@ -387,8 +391,10 @@ export struct ToolsRootView {
   @Builder
   private apiToolsPanel() {
     Column({ space: 14 }) {
-      Text('API 调用入口').width('100%').fontSize(19).fontWeight(FontWeight.Bold)
+      Text('真实模型 API 配置').width('100%').fontSize(19).fontWeight(FontWeight.Bold)
         .fontColor(this.palette().primaryText)
+      Text('这里配置模型服务地址、API Key 和模型 ID。只有“AI”与“Agent”页会把问题发送给真实生成式模型。')
+        .width('100%').fontSize(13).lineHeight(20).fontColor(this.palette().secondaryText)
       TextInput({ text: this.apiEndpoint, placeholder: 'http://127.0.0.1:8787' })
         .height(48).onChange((value: string) => this.apiEndpoint = value)
       if (this.modelMode === AiModelMode.BACKEND_API) {
@@ -412,15 +418,21 @@ export struct ToolsRootView {
         Text('支持 OpenAI 兼容接口：Groq、SiliconFlow、OpenRouter 等。密钥只放在设备内存中。')
           .width('100%').fontSize(11).lineHeight(18).fontColor(this.palette().secondaryText)
       }
-      Button('检测后端健康状态').width('100%').height(46).backgroundColor('#12A69A')
+      Button('检测模型服务连接').width('100%').height(46).fontColor('#FFFFFFFF').backgroundColor('#087F5B')
+        .linearGradient({ angle: 90, colors: [['#087F5B', 0], ['#19A97B', 0.55], ['#3977F6', 1]] })
         .onClick(() => this.checkApi())
       Text(this.apiStatus).width('100%').fontSize(12).fontColor('#5CE1D0')
       Divider().color(this.line())
-      Text('JSON 格式化').width('100%').fontSize(19).fontWeight(FontWeight.Bold)
+      Text('确定性开发工具').width('100%').fontSize(19).fontWeight(FontWeight.Bold)
+        .fontColor(this.palette().primaryText)
+      Text('以下 JSON 格式化和 HTTP 状态码查询是本地工具，不是 AI，也不会根据文本生成答案。')
+        .width('100%').fontSize(13).lineHeight(20).fontColor(this.palette().secondaryText)
+      Text('JSON 格式化').width('100%').fontSize(18).fontWeight(FontWeight.Bold)
         .fontColor(this.palette().primaryText)
       TextArea({ text: this.jsonInput, placeholder: '输入 JSON' }).height(110).fontFamily('monospace')
         .onChange((value: string) => this.jsonInput = value)
-      Button('格式化并校验').width('100%').height(46).backgroundColor('#5B8CFF')
+      Button('格式化并校验').width('100%').height(46).fontColor('#FFFFFFFF').backgroundColor('#3157A4')
+        .linearGradient({ angle: 90, colors: [['#3157A4', 0], ['#6A3DE8', 1]] })
         .onClick(() => this.formatJson())
       Text(this.jsonOutput).width('100%').fontSize(12).fontFamily('monospace')
         .fontColor(this.palette().primaryText).copyOption(CopyOptions.LocalDevice)

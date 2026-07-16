@@ -1,10 +1,12 @@
 import { uiMaterial } from '@kit.ArkUI';
+import { common } from '@kit.AbilityKit';
 import { image } from '@kit.ImageKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { AsyncStatePanel } from '../../components/common/AsyncStatePanel';
 import { InlineErrorNotice } from '../../components/common/InlineErrorNotice';
 import { NoticeSeverity } from '../../components/common/CommonComponentModels';
 import { DiagnosisTextEditor } from '../../components/diagnosis/DiagnosisTextEditor';
+import { DIAGNOSIS_EXAMPLES, DiagnosisExample } from '../../constants/DiagnosisExamples';
 import { SourceType } from '../../model/DiagnosisModels';
 import { OperationStatus } from '../../model/ResultModels';
 import { VisualEffectMode } from '../../model/SettingsModels';
@@ -44,6 +46,8 @@ export struct DiagnosisPage {
   ocrStatus: string = '选择报错截图，Core Vision Kit 会在设备端提取文字。';
   @State
   ocrBusy: boolean = false;
+  @State
+  sampleSaveStatus: string = '可将 4 张典型报错截图保存到模拟器相册，用于完整演示图片选择与视觉识别流程。';
   private readonly vision: VisionAiAdapter = new VisionAiAdapter();
 
   aboutToAppear(): void {
@@ -93,6 +97,35 @@ export struct DiagnosisPage {
     }
   }
 
+  private async saveDiagnosisSamples(): Promise<void> {
+    const context = getContext(this) as common.UIAbilityContext;
+    const helper = photoAccessHelper.getPhotoAccessHelper(context);
+    const sampleNames: Array<string> = [
+      '01_ArkTS_Type_Error.png',
+      '02_Ohpm_Package_Not_Found.png',
+      '03_Module_Json_Error.png',
+      '04_Network_Timeout.png'
+    ];
+    this.sampleSaveStatus = '正在写入模拟器相册…';
+    try {
+      for (let index = 0; index < sampleNames.length; index++) {
+        const name = sampleNames[index];
+        const data = await context.resourceManager.getRawFileContent(`diagnosis_samples/${name}`);
+        const request = photoAccessHelper.MediaAssetChangeRequest.createAssetRequest(
+          context,
+          photoAccessHelper.PhotoType.IMAGE,
+          'png',
+          { title: `HarmonyOS_Diagnosis_${index + 1}` }
+        );
+        request.addResource(photoAccessHelper.ResourceType.IMAGE_RESOURCE, data.buffer as ArrayBuffer);
+        await helper.applyChanges(request);
+      }
+      this.sampleSaveStatus = '已保存 4 张诊断测试图到系统相册，现在可点击“选择截图并识别文字”。';
+    } catch (_) {
+      this.sampleSaveStatus = '保存测试图失败，请再次点击并允许临时相册写入授权。';
+    }
+  }
+
   build() {
     NavDestination() {
       if (this.viewModel === undefined) {
@@ -129,13 +162,34 @@ export struct DiagnosisPage {
                 .constraintSize({ minHeight: 48 })
                 .enabled(!this.ocrBusy)
                 .fontWeight(FontWeight.Bold)
-                .fontColor(this.palette().accent)
-                .backgroundColor(this.palette().surfaceBackground)
+                .fontColor('#FFFFFFFF')
+                .backgroundColor('#0A59F7')
                 .border({ width: 1, color: this.palette().focusBorder })
                 .borderRadius(14)
                 .onClick((): void => {
                   this.chooseImageAndRecognize();
                 })
+              SaveButton({
+                icon: SaveIconStyle.LINES,
+                text: SaveDescription.SAVE_TO_GALLERY,
+                buttonType: ButtonType.Capsule
+              })
+                .width('100%')
+                .height(52)
+                .fontSize(16 * this.appState.contentFontMultiplier)
+                .fontColor('#FFFFFFFF')
+                .backgroundColor('#3558C8')
+                .onClick((_event: ClickEvent, result: SaveButtonOnClickResult): void => {
+                  if (result === SaveButtonOnClickResult.SUCCESS) {
+                    this.saveDiagnosisSamples();
+                  } else {
+                    this.sampleSaveStatus = '未获得临时相册写入授权，请再次点击并确认授权。';
+                  }
+                })
+              Text(this.sampleSaveStatus)
+                .width('100%')
+                .fontSize(13 * this.appState.contentFontMultiplier)
+                .fontColor(this.palette().secondaryText)
             }
 
             DiagnosisTextEditor({
@@ -151,6 +205,37 @@ export struct DiagnosisPage {
                 this.viewModel?.clearInput();
               }
             })
+
+            Column({ space: 8 }) {
+              Text('内置测试用例')
+                .width('100%')
+                .fontSize(16 * this.appState.contentFontMultiplier)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(this.palette().primaryText)
+              Text('选择不同错误类型，立即填入诊断输入框。')
+                .width('100%')
+                .fontSize(13 * this.appState.contentFontMultiplier)
+                .fontColor(this.palette().secondaryText)
+              Scroll() {
+                Row({ space: 8 }) {
+                  ForEach(DIAGNOSIS_EXAMPLES, (example: DiagnosisExample): void => {
+                    Button(`${example.title} · ${example.description}`)
+                      .height(44)
+                      .fontColor('#FFFFFFFF')
+                      .backgroundColor('#3157A4')
+                      .borderRadius(12)
+                      .onClick((): void => {
+                        this.viewModel?.updateText(example.text);
+                      })
+                  }, (example: DiagnosisExample): string => example.title)
+                }
+              }
+              .width('100%')
+              .scrollable(ScrollDirection.Horizontal)
+              .scrollBar(BarState.Off)
+            }
+            .width('100%')
+            .alignItems(HorizontalAlign.Start)
 
             if (this.viewModel.diagnosisOperation.status === OperationStatus.LOADING) {
               AsyncStatePanel({
@@ -175,7 +260,8 @@ export struct DiagnosisPage {
                 .width('100%')
                 .constraintSize({ minHeight: 48 })
                 .enabled(this.viewModel.diagnosisOperation.status !== OperationStatus.LOADING)
-                .fontColor(this.palette().accent)
+                .fontColor('#FFFFFFFF')
+                .backgroundColor('#087F5B')
                 .onClick((): void => {
                   this.viewModel?.useExample();
                 })
@@ -184,8 +270,8 @@ export struct DiagnosisPage {
                 .width('100%')
                 .constraintSize({ minHeight: 52 })
                 .fontWeight(FontWeight.Bold)
-                .fontColor(this.palette().primaryText)
-                .backgroundColor(this.palette().focusSurface)
+                .fontColor('#FFFFFFFF')
+                .backgroundColor('#172B4D')
                 .backgroundBlurStyle(this.appState.visualEffectMode !== VisualEffectMode.OFF &&
                   this.appState.effectiveTheme === EffectiveTheme.DARK ?
                   BlurStyle.Thin : BlurStyle.NONE)
@@ -225,7 +311,8 @@ export struct DiagnosisPage {
                 $r('app.string.route_back_home') : $r('app.string.route_back_origin'))
                 .width('100%')
                 .constraintSize({ minHeight: 48 })
-                .fontColor(this.palette().secondaryText)
+                .fontColor('#FFFFFFFF')
+                .backgroundColor('#0A59F7')
                 .onClick((): void => {
                   this.router.back();
                 })

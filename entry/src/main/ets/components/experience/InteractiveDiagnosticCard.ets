@@ -26,6 +26,12 @@ export struct InteractiveDiagnosticCard {
     });
   }
 
+  private simulateTrigger(): void {
+    this.trigger();
+    this.sensorStatus = this.activated ? '模拟器入口已触发，互动卡片恢复待机' :
+      '模拟器入口已触发，动态诊断信息正在展示';
+  }
+
   private async enableShake(): Promise<void> {
     try {
       const context = getContext(this) as common.UIAbilityContext;
@@ -59,26 +65,40 @@ export struct InteractiveDiagnosticCard {
   build() {
     Column({ space: 12 }) {
       Stack({ alignContent: Alignment.Center }) {
-        Column({ space: 8 }) {
-          Text(this.activated ? '动态诊断卡片' : '互动诊断卡片')
-            .fontSize(22).fontWeight(FontWeight.Bold).fontColor('#F4F7FC')
+        Column({ space: 10 }) {
+          Text(this.activated ? '动态诊断正在运行' : '互动诊断体验')
+            .fontSize(22).fontWeight(FontWeight.Bold).fontColor('#FFFFFFFF')
             .fontVariations([{ axis: 'wght', value: this.activated ? 820 : 650 }])
-          Text(this.activated ? '前景已出框 · 规则匹配 12 项 · AI 就绪' : '摇一摇手机，让静态卡片转为动态状态')
-            .fontSize(13).fontColor('#AAB8CC').textAlign(TextAlign.Center)
+          Text(this.activated ? '已匹配 12 项本地规则' : '模拟器可直接启动，无需摇动设备')
+            .fontSize(14).fontWeight(FontWeight.Medium).fontColor('#E8EEFF')
+          Text(this.activated ? '分析阶段：定位首个根因错误 · 生成可执行修复步骤' :
+            '点击下方入口，查看卡片展开、状态变化和诊断进度。')
+            .fontSize(12).lineHeight(19).fontColor('#C8D5F2').textAlign(TextAlign.Center)
         }
-        .translate({ y: this.activated ? -8 : 0 })
-        if (this.activated) {
-          Text('⚡').fontSize(46).translate({ x: 120, y: -76 }).rotate({ angle: 12 })
-        }
+        .padding({ left: 22, right: 22 })
+        .translate({ y: this.activated ? -5 : 0 })
       }
-      .width('100%').height(190).backgroundColor('#B30B1628').systemMaterial(this.material)
-      .border({ width: 1, color: this.activated ? '#5CE1D0' : '#34506F' }).borderRadius(24)
-      .shadow({ radius: this.activated ? 26 : 8, color: this.activated ? '#665CE1D0' : '#22000000', offsetY: 8 })
-      .scale({ x: this.activated ? 1.02 : 1, y: this.activated ? 1.02 : 1 })
-      .onClick(() => this.trigger())
-      Text(this.sensorStatus).width('100%').fontSize(12).fontColor('#91A0B8')
-      Button('启用摇一摇').width('100%').height(46).backgroundColor('#12A69A').borderRadius(14)
-        .onClick(() => this.enableShake())
+      .width('100%').height(190).backgroundColor('#243A78').systemMaterial(this.material)
+      .linearGradient({
+        angle: 128,
+        colors: this.activated ? [['#184B8A', 0], ['#6A3DE8', 0.5], ['#0B8F83', 1]] :
+          [['#172B4D', 0], ['#3157A4', 0.55], ['#7A3FC1', 1]]
+      })
+      .border({ width: 1, color: this.activated ? '#8EF3E5' : '#9DB9FF' }).borderRadius(24)
+      .shadow({ radius: this.activated ? 28 : 14, color: this.activated ? '#665CE1D0' : '#44315BE8', offsetY: 8 })
+      .scale({ x: this.activated ? 1.015 : 1, y: this.activated ? 1.015 : 1 })
+      .onClick(() => this.simulateTrigger())
+      Text(this.sensorStatus).width('100%').fontSize(12).fontColor('#52627A')
+      Row({ space: 10 }) {
+        Button(this.activated ? '收起互动卡片' : '直接展示互动卡片')
+          .layoutWeight(1).height(48).fontColor('#FFFFFFFF').backgroundColor('#5B5BEF').borderRadius(14)
+          .linearGradient({ angle: 90, colors: [['#5B8CFF', 0], ['#7658E8', 1]] })
+          .onClick(() => this.simulateTrigger())
+        Button('启用实体机摇一摇')
+          .layoutWeight(1).height(48).fontColor('#FFFFFFFF').backgroundColor('#0A8F83').borderRadius(14)
+          .linearGradient({ angle: 90, colors: [['#0A8F83', 0], ['#19B57A', 1]] })
+          .onClick(() => this.enableShake())
+      }.width('100%')
     }.width('100%')
   }
 }

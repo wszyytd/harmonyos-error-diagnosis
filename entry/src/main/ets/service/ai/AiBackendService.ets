@@ -54,7 +54,7 @@ export class DevAssistMiniModel {
   infer(prompt: string, agentMode: boolean): AiReply {
     const input = prompt.trim();
     const lower = input.toLowerCase();
-    let answer = '建议按“现象确认 → 最小复现 → 定位首个错误 → 修复后回归”的顺序处理。';
+    let answer = `离线规则库没有识别“${input}”对应的已知错误类型。它不是生成式 AI，不能进行开放问答。`;
     let steps: Array<string> = ['补充完整错误上下文', '定位第一条根因错误', '执行最小修改并重新构建'];
 
     if (lower.includes('ohpm') || lower.includes('not found') || lower.includes('package')) {
@@ -74,17 +74,17 @@ export class DevAssistMiniModel {
     if (agentMode) {
       return {
         text: `DevAssist Agent 已完成任务规划：${answer}`,
-        provider: 'DevAssist Mini · Free Local Agent',
+        provider: 'LOCAL RULE AGENT · NOT GENERATIVE AI',
         steps: ['Planner：识别目标与约束', 'Skill Router：选择诊断能力', ...steps, 'Verifier：输出可验证结论']
       };
     }
-    return { text: answer, provider: 'DevAssist Mini · Free Local Model', steps: steps };
+    return { text: answer, provider: 'LOCAL RULE ENGINE · NOT GENERATIVE AI', steps: steps };
   }
 }
 
 export class AiBackendService {
   // The emulator connects to the host through `hdc rport tcp:8787 tcp:8787`.
-  private endpoint: string = 'http://127.0.0.1:8787';
+  private endpoint: string = 'https://api.groq.com/openai/v1';
   private apiKey: string = '';
   private apiModel: string = 'openai/gpt-oss-20b';
   private localModel: DevAssistMiniModel = new DevAssistMiniModel();
@@ -209,7 +209,7 @@ export class AiBackendService {
     }
     const fallback = this.localModel.infer(prompt, agentMode);
     return {
-      text: `${fallback.text}\n\n在线 API 当前不可达，已自动切换到免费端侧模型。`,
+      text: `${fallback.text}\n\n本地后端 API 当前不可达，已切换到离线规则诊断。`,
       provider: `${fallback.provider} · API Fallback`,
       steps: fallback.steps
     };
