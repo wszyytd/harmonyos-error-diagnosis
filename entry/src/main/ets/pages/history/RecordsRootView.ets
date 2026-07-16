@@ -78,6 +78,13 @@ export struct RecordsRootView {
     }
   }
 
+  private toggleFavorite(reportId: string, favorite: boolean): Promise<boolean> {
+    if (this.viewModel === undefined) {
+      return Promise.resolve(false);
+    }
+    return this.viewModel.toggleFavorite(reportId, favorite);
+  }
+
   build() {
     Scroll() {
       Column({ space: 14 }) {
@@ -129,8 +136,8 @@ export struct RecordsRootView {
                 idPrefix: 'history_report',
                 showActions: true,
                 onOpen: (): void => { this.viewModel?.openReport(item.reportId); },
-                onFavorite: (): void => {
-                  this.viewModel?.toggleFavorite(item.reportId, !item.isFavorite);
+                onFavorite: (favorite: boolean): Promise<boolean> => {
+                  return this.toggleFavorite(item.reportId, favorite);
                 },
                 onDelete: (): void => { this.requestDelete(item.reportId); }
               })

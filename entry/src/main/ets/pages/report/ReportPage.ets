@@ -1,5 +1,10 @@
 import { uiMaterial } from '@kit.ArkUI';
 import { AsyncStatePanel } from '../../components/common/AsyncStatePanel';
+import {
+  beginFavoriteToggle,
+  completeFavoriteToggle,
+  FavoriteToggleTransition
+} from '../../components/common/FavoriteActionModels';
 import { GlassActionButton } from '../../components/common/GlassActionButton';
 import { GlassActionStyle } from '../../components/common/GlassActionButtonModels';
 import { InlineErrorNotice } from '../../components/common/InlineErrorNotice';
@@ -41,11 +46,15 @@ export struct ReportPage {
   reportSnapshot: DiagnosisReport | undefined = undefined;
   @State
   rawTextExpanded: boolean = false;
+  @State
+  favoriteValue: boolean = false;
+  @State
+  favoriteUpdating: boolean = false;
 
   aboutToAppear(): void {
     if (this.viewModel === undefined) {
       this.viewModel = createReportViewModel(this.routeParams, this.router);
-      this.reportSnapshot = this.viewModel.report;
+      this.syncReportSnapshot();
       if (this.reportSnapshot === undefined && this.routeParams.reportId !== undefined) {
         this.loadHistoricalReport();
       }
@@ -66,17 +75,33 @@ export struct ReportPage {
 
   private async loadHistoricalReport(): Promise<void> {
     await this.viewModel?.loadReport();
-    this.reportSnapshot = this.viewModel?.report;
+    this.syncReportSnapshot();
   }
 
   private async saveReport(): Promise<void> {
     await this.viewModel?.saveReport();
-    this.reportSnapshot = this.viewModel?.report;
+    this.syncReportSnapshot();
   }
 
   private async toggleFavorite(): Promise<void> {
-    await this.viewModel?.toggleFavorite();
+    if (this.viewModel === undefined || this.favoriteUpdating) {
+      return;
+    }
+    const transition: FavoriteToggleTransition = beginFavoriteToggle(this.favoriteValue);
+    this.favoriteUpdating = true;
+    this.favoriteValue = transition.pendingValue;
+    const succeeded: boolean = await this.viewModel.toggleFavorite();
+    this.favoriteValue = completeFavoriteToggle(transition, succeeded);
     this.reportSnapshot = this.viewModel?.report;
+    this.favoriteUpdating = false;
+  }
+
+  private syncReportSnapshot(): void {
+    const snapshot: DiagnosisReport | undefined = this.viewModel?.report;
+    this.reportSnapshot = snapshot;
+    if (snapshot !== undefined) {
+      this.favoriteValue = snapshot.isFavorite;
+    }
   }
 
   @Builder
@@ -182,9 +207,9 @@ export struct ReportPage {
         })
         if (this.viewModel?.isSaved) {
           GlassActionButton({
-            label: report.isFavorite ? '取消收藏' : '收藏报告',
+            label: this.favoriteValue ? '取消收藏' : '收藏报告',
             buttonId: 'report_favorite',
-            loading: this.viewModel.favoriteOperation.status === OperationStatus.LOADING,
+            loading: this.favoriteUpdating,
             actionStyle: GlassActionStyle.FAVORITE,
             onAction: (): void => { this.toggleFavorite(); }
           })

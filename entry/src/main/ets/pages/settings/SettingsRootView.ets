@@ -28,7 +28,7 @@ export struct SettingsRootView {
   @State private privacyMask: boolean = true;
   @State private hapticFeedback: boolean = true;
   @State private diagnosticNotifications: boolean = true;
-  @State private apiProvider: string = 'Groq';
+  @State private apiProvider: string = 'OpenAI 兼容';
   @State private requestTimeout: number = 30;
   @State private historyCapacity: number = 50;
 
@@ -193,8 +193,6 @@ export struct SettingsRootView {
 
         this.sectionTitle('AI 与网络', '真实模型需要 API Key；密钥只保存在当前运行内')
         Row({ space: 8 }) {
-          this.choiceButton('Groq', (): boolean => this.apiProvider === 'Groq',
-            (): void => { this.apiProvider = 'Groq'; })
           this.choiceButton('OpenAI 兼容', (): boolean => this.apiProvider === 'OpenAI 兼容',
             (): void => { this.apiProvider = 'OpenAI 兼容'; })
           this.choiceButton('本地后端', (): boolean => this.apiProvider === '本地后端',
