@@ -62,6 +62,9 @@ import { HiLogService } from './HiLogService';
 import { HarmonyThemePlatform } from './HarmonyThemePlatform';
 import { SystemIdGenerator } from '../../utils/IdGenerator';
 import { SystemTimeProvider } from '../../utils/TimeProvider';
+import { FormCardRefreshService } from '../../form/FormCardRefreshService';
+import { createHarmonyFormRefreshService } from '../../form/HarmonyFormRuntime';
+import { ReportConsumerRefreshCoordinator } from '../../form/ReportConsumerRefreshCoordinator';
 
 /** Process-level state shared by the Navigation root and all six T11 pages. */
 export const appStateStore: AppStateStore = new AppStateStore();
@@ -75,6 +78,7 @@ let diagnosisStaticRepository: StaticContentRepository | undefined;
 let diagnosisService: DiagnosisService | undefined;
 let diagnosisLogger: HiLogService | undefined;
 let diagnosisValidationService: InputValidationService | undefined;
+let formCardRefreshService: FormCardRefreshService | undefined;
 
 /** Synchronously wires dependencies, then restores Preferences without blocking first render. */
 export function configureAppRuntime(context: common.UIAbilityContext): Promise<boolean> {
@@ -168,12 +172,7 @@ export function createReportViewModel(
     reportRepository,
     router,
     routeParams,
-    async (): Promise<boolean> => {
-      if (homeViewModel === undefined) {
-        return false;
-      }
-      return homeViewModel.loadRecent();
-    }
+    (): Promise<boolean> => refreshReportConsumers()
   );
 }
 
@@ -181,23 +180,49 @@ export function createHistoryViewModel(router: AppRouter): HistoryViewModel {
   if (reportRepository === undefined) {
     throw new Error('HOME_RUNTIME_NOT_CONFIGURED');
   }
-  return new HistoryViewModel(reportRepository, router, async (): Promise<boolean> => {
-    if (homeViewModel === undefined) {
-      return false;
-    }
-    return homeViewModel.loadRecent();
-  });
+  return new HistoryViewModel(
+    reportRepository,
+    router,
+    (): Promise<boolean> => refreshReportConsumers()
+  );
 }
 
 function configureHomeRuntime(context: common.UIAbilityContext): void {
   const logger = new HiLogService(new HarmonyHiLogSink());
   const manager = new DatabaseManager(new HarmonyDatabaseStoreProvider(context), logger);
   reportDataStore = new LazyReportDataStore(manager, logger);
-  configureHomeRuntimeWithRepository(new LocalReportRepository(
+  const repository = new LocalReportRepository(
     reportDataStore,
     new SystemTimeSource(),
     logger
-  ));
+  );
+  configureHomeRuntimeWithRepository(repository);
+  formCardRefreshService = createHarmonyFormRefreshService(context, repository);
+  refreshInitialFormSummary();
+}
+
+async function refreshInitialFormSummary(): Promise<void> {
+  if (formCardRefreshService !== undefined) {
+    await formCardRefreshService.syncFromRecentReport();
+  }
+}
+
+async function refreshReportConsumers(): Promise<boolean> {
+  const coordinator = new ReportConsumerRefreshCoordinator(
+    async (): Promise<boolean> => {
+      if (homeViewModel === undefined) {
+        return false;
+      }
+      return homeViewModel.loadRecent();
+    },
+    async (): Promise<boolean> => {
+      if (formCardRefreshService === undefined) {
+        return true;
+      }
+      return formCardRefreshService.syncFromRecentReport();
+    }
+  );
+  return coordinator.refresh();
 }
 
 /** Testable composition seam; production passes the real LocalReportRepository above. */
@@ -262,6 +287,7 @@ export function disposeAppRuntime(): void {
   reportDataStore?.close();
   reportDataStore = undefined;
   reportRepository = undefined;
+  formCardRefreshService = undefined;
   diagnosisSessionStore = undefined;
   diagnosisStaticRepository = undefined;
   diagnosisService = undefined;

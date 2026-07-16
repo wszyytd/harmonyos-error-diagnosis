@@ -33,6 +33,7 @@ import rawResourceStoreTest from './unit/RawResourceStore.test';
 import ruleMatcherTest from './unit/RuleMatcher.test';
 import routeRegistryTest from './unit/RouteRegistry.test';
 import reportRowMapperTest from './unit/ReportRowMapper.test';
+import reportConsumerRefreshCoordinatorTest from './unit/ReportConsumerRefreshCoordinator.test';
 import reportRepositoryTest from './unit/ReportRepository.test';
 import reportViewModelTest from './unit/ReportViewModel.test';
 import reportStoreTest from './unit/ReportStore.test';
@@ -79,6 +80,7 @@ export default function testsuite() {
   ruleMatcherTest();
   routeRegistryTest();
   reportRowMapperTest();
+  reportConsumerRefreshCoordinatorTest();
   reportRepositoryTest();
   reportViewModelTest();
   reportStoreTest();
