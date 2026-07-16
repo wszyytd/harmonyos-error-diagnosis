@@ -14,6 +14,10 @@ export interface QuickDiagnosisFormBindingData {
   description: string;
   actionLabel: string;
   privacyHint: string;
+  hasReport: boolean;
+  errorType: string;
+  reportSummary: string;
+  savedAtText: string;
 }
 
 /** Creates a fresh static value object for the minimal Form prototype. */
@@ -34,6 +38,10 @@ export function toFormBindingRecord(data: QuickDiagnosisFormData): QuickDiagnosi
     title: data.title,
     description: data.description,
     actionLabel: data.actionLabel,
-    privacyHint: data.privacyHint
+    privacyHint: data.privacyHint,
+    hasReport: false,
+    errorType: '暂无已保存报告',
+    reportSummary: '完成一次诊断并保存后显示',
+    savedAtText: ''
   };
 }

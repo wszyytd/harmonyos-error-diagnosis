@@ -36,11 +36,15 @@ export default function formCardModelsTest() {
       expect(binding.description).assertEqual(data.description);
       expect(binding.actionLabel).assertEqual(data.actionLabel);
       expect(binding.privacyHint).assertEqual(data.privacyHint);
+      expect(binding.hasReport).assertFalse();
+      expect(binding.errorType).assertEqual('暂无已保存报告');
+      expect(binding.reportSummary).assertEqual('完成一次诊断并保存后显示');
+      expect(binding.savedAtText).assertEqual('');
       const serialized = JSON.stringify(binding);
       expect(serialized.includes('rawText')).assertFalse();
       expect(serialized.includes('imageUri')).assertFalse();
       expect(serialized.includes('reportId')).assertFalse();
-      expect(Object.keys(binding).length).assertEqual(5);
+      expect(Object.keys(binding).length).assertEqual(9);
     });
   });
 }

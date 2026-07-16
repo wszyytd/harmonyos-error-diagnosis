@@ -15,6 +15,8 @@ import errorCodesTest from './unit/ErrorCodes.test';
 import favoriteActionModelsTest from './unit/FavoriteActionModels.test';
 import formCardModelsTest from './unit/FormCardModels.test';
 import formProfileTest from './unit/FormProfile.test';
+import formSummaryModelsTest from './unit/FormSummaryModels.test';
+import formSummaryRepositoryTest from './unit/FormSummaryRepository.test';
 import floatingDockModelsTest from './unit/FloatingDockModels.test';
 import glassActionButtonModelsTest from './unit/GlassActionButtonModels.test';
 import hiLogServiceTest from './unit/HiLogService.test';
@@ -58,6 +60,8 @@ export default function testsuite() {
   favoriteActionModelsTest();
   formCardModelsTest();
   formProfileTest();
+  formSummaryModelsTest();
+  formSummaryRepositoryTest();
   floatingDockModelsTest();
   glassActionButtonModelsTest();
   hiLogServiceTest();
