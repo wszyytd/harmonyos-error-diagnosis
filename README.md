@@ -8,15 +8,18 @@ HarmonyOS API 26、ArkTS Stage模型的本地开发报错诊断应用。
 
 - 本地规则诊断：输入校验、错误分类、原因分析、处理步骤、报告保存与历史查询。
 - 截图诊断：系统安全图片选择器 + Core Vision Kit OCR，识别结果可直接进入诊断流程。
-- AI 对话：内置零费用 `DevAssist Mini` 端侧规则/意图模型，断网也能演示；可切换 HTTP API。
+- AI 对话：默认使用真实 OpenAI Chat Completions 兼容接口；填写服务地址、API Key 和模型 ID 后，可调用 Groq、OpenAI 或其他兼容模型。
+- 离线规则诊断：不联网时使用 `DevAssist Mini` 规则引擎，界面明确标记“非生成式 AI”，不会把固定模板伪装成大模型回答。
 - Agent：本地 Planner、Skill Router、Verifier 流程；支持填写平台注册 Agent ID 检测系统 Agent 能力。
 - Skill：JSON Formatter、Error Triage、Report Writer、Privacy Redactor。
 - 视觉 AI：端侧文字识别，图片不默认上传。
 - 智慧多窗：创建应用子窗并展示“闪控窗”式诊断进度；不支持子窗的设备会返回明确降级提示。
-- 互动卡片：点击或摇一摇切换诊断卡片状态；模拟器无传感器时可点击演示。
+- 互动卡片：点击或摇一摇切换诊断卡片状态；模拟器提供“直接展示互动卡片”入口，无需传感器。
 - 沉浸光感：核心卡片和操作使用 API 26 `uiMaterial.ImmersiveMaterial`，启用触控跟随光感。
 - 可变字体：标题和关键状态使用 `fontVariations`，信息层级随字重变化。
 - 主题与隐私：浅色、深色、跟随系统，以及完整隐私说明和本地优先策略。
+- 演示用例：5 组文本错误用例和 4 张报错截图；截图诊断页可经系统安全保存按钮一键写入模拟器相册。
+- 高级设置：诊断自动保存、剪贴板检测、隐私脱敏、触觉反馈、通知、AI 服务商、超时和历史容量等交互选项。
 
 ## 系统能力边界
 
@@ -32,7 +35,21 @@ npm test
 npm start
 ```
 
-默认端口 `8787`，提供 `/health`、`/api/models`、`/api/chat`、`/api/agent/run` 和 `/api/vision/analyze`。先执行 `backend/start-emulator-api.ps1` 建立 HDC 端口转发，应用使用 `http://127.0.0.1:8787`；API 不可达会自动降级到免费端侧模型。详细操作见 `docs/项目使用与开发手册.md`。
+默认端口 `8787`，提供 `/health`、`/api/models`、`/api/chat`、`/api/agent/run` 和 `/api/vision/analyze`。先执行 `backend/start-emulator-api.ps1` 建立 HDC 端口转发，应用使用 `http://127.0.0.1:8787`。真实生成式 AI 需要用户自己的模型 API Key；本地后端与离线规则仅用于无需密钥的诊断演示。详细操作见 `docs/项目使用与开发手册.md`。
+
+## API/工具页是什么
+
+- “真实模型 API 配置”负责检测模型服务地址是否可达；真正的生成式请求在“AI”和“Agent”页发出。
+- “JSON 格式化”和“HTTP 状态码速查”是确定性开发工具，相同输入得到相同输出，它们不是 AI。
+- 在线模型返回内容来自服务商的 `/chat/completions` 响应，不使用本地固定答案。
+
+## 已验证结果（2026-07-16）
+
+- HarmonyOS API 26 Debug HAP：构建成功。
+- ArkTS Local Test：通过。
+- Node.js 后端自动化测试：`13 passed`。
+- Pura 90 Pro 模拟器：安装、启动、首页动态光场、导航、截图诊断和系统安全相册写入均已验证。
+- 公开仓库：[leiyurun3-sudo/harmonyos-error-diagnosis](https://github.com/leiyurun3-sudo/harmonyos-error-diagnosis)
 
 ## 开发环境
 
