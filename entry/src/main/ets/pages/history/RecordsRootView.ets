@@ -1,5 +1,7 @@
 import { AsyncStatePanel } from '../../components/common/AsyncStatePanel';
 import { ConfirmActionDialog } from '../../components/common/ConfirmActionDialog';
+import { GlassActionButton } from '../../components/common/GlassActionButton';
+import { GlassActionStyle } from '../../components/common/GlassActionButtonModels';
 import { EmptyStateView } from '../../components/common/EmptyStateView';
 import { InlineErrorNotice } from '../../components/common/InlineErrorNotice';
 import { HistoryReportCard } from '../../components/history/HistoryReportCard';
@@ -136,12 +138,13 @@ export struct RecordsRootView {
           }
         }
         if (this.viewModel !== undefined && !this.viewModel.isHistoryEmpty) {
-          Button('清空全部历史记录')
-            .width('100%')
-            .constraintSize({ minHeight: 48 })
-            .fontColor(this.palette().error)
-            .enabled(this.viewModel.mutationStatus !== OperationStatus.LOADING)
-            .onClick((): void => { this.clearDialogController.open(); })
+          GlassActionButton({
+            label: '清空全部历史记录',
+            buttonId: 'history_clear_all',
+            actionEnabled: this.viewModel.mutationStatus !== OperationStatus.LOADING,
+            actionStyle: GlassActionStyle.DANGER,
+            onAction: (): void => { this.clearDialogController.open(); }
+          })
         }
       }
       .width('100%')

@@ -1,23 +1,15 @@
-import { uiMaterial } from '@kit.ArkUI';
 import { AppStateStore } from '../../store/AppStateStore';
 import { getThemePalette, ThemePalette } from '../../theme/ThemeModels';
 import {
   createGlassActionInteractionState,
   createGlassActionVisualState,
+  GlassActionStyle,
   GlassActionInteractionState,
   GlassActionVisualState
 } from './GlassActionButtonModels';
 
 @Component
 export struct GlassActionButton {
-  private readonly lightFocusMaterial: uiMaterial.ImmersiveMaterial = new uiMaterial.ImmersiveMaterial({
-    style: uiMaterial.ImmersiveStyle.THIN,
-    materialColor: '#33FFFFFF',
-    colorInvert: false,
-    applyShadow: true,
-    interactive: true,
-    lightEffect: { color: Color.White }
-  });
   @Consume('appState')
   appState: AppStateStore;
   @Prop
@@ -30,6 +22,10 @@ export struct GlassActionButton {
   loading: boolean = false;
   @Prop
   compact: boolean = false;
+  @Prop
+  buttonWidth: Length = '100%';
+  @Prop
+  actionStyle: GlassActionStyle = GlassActionStyle.PRIMARY;
   @State
   private pressed: boolean = false;
   onAction: () => void = (): void => {};
@@ -44,7 +40,8 @@ export struct GlassActionButton {
       this.appState.effectiveTheme,
       this.appState.visualEffectMode,
       this.interactionState().actionAvailable,
-      this.pressed
+      this.pressed,
+      this.actionStyle
     );
   }
 
@@ -55,16 +52,15 @@ export struct GlassActionButton {
   build() {
     Button(this.label)
       .id(this.buttonId)
-      .width(this.compact ? 112 : '100%')
+      .width(this.compact ? 112 : this.buttonWidth)
       .constraintSize({ minHeight: this.compact ? 44 : 52 })
       .fontSize(16 * this.appState.contentFontMultiplier)
       .fontWeight(FontWeight.Bold)
       .fontColor(this.visualState().foregroundColor)
       .backgroundColor(this.visualState().backgroundColor)
       .backgroundBlurStyle(this.visualState().useDarkBlur ? BlurStyle.Thin : BlurStyle.NONE)
-      .systemMaterial(this.visualState().useLightMaterial ? this.lightFocusMaterial : undefined)
       .border({ width: this.visualState().borderWidth, color: this.visualState().borderColor })
-      .borderRadius(14)
+      .borderRadius(16)
       .opacity(this.visualState().opacity)
       .shadow({
         radius: this.visualState().shadowRadius,

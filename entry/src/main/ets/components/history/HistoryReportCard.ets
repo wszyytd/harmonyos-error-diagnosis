@@ -1,4 +1,6 @@
 import { AppStateStore } from '../../store/AppStateStore';
+import { GlassActionButton } from '../common/GlassActionButton';
+import { GlassActionStyle } from '../common/GlassActionButtonModels';
 import {
   getThemePalette,
   ThemePalette
@@ -53,26 +55,32 @@ export struct HistoryReportCard {
           .fontSize(12 * this.appState.contentFontMultiplier)
           .fontColor(this.palette().secondaryText)
         Blank()
-        Text($r('app.string.home_recent_open'))
-          .fontSize(13 * this.appState.contentFontMultiplier)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.palette().accent)
-          .onClick((): void => { this.onOpen(); })
+        GlassActionButton({
+          label: $r('app.string.home_recent_open'),
+          buttonId: `${this.idPrefix}_open_${this.item.reportId}`,
+          compact: true,
+          actionStyle: GlassActionStyle.PRIMARY,
+          onAction: (): void => { this.onOpen(); }
+        })
       }
       .width('100%')
 
       if (this.showActions) {
         Row({ space: 10 }) {
-          Button(this.item.isFavorite ? '取消收藏' : '收藏')
-            .layoutWeight(1)
-            .constraintSize({ minHeight: 44 })
-            .fontColor(this.palette().accent)
-            .onClick((): void => { this.onFavorite(); })
-          Button('删除')
-            .layoutWeight(1)
-            .constraintSize({ minHeight: 44 })
-            .fontColor(this.palette().error)
-            .onClick((): void => { this.onDelete(); })
+          GlassActionButton({
+            label: this.item.isFavorite ? '取消收藏' : '收藏',
+            buttonId: `${this.idPrefix}_favorite_${this.item.reportId}`,
+            buttonWidth: '48%',
+            actionStyle: GlassActionStyle.FAVORITE,
+            onAction: (): void => { this.onFavorite(); }
+          })
+          GlassActionButton({
+            label: '删除',
+            buttonId: `${this.idPrefix}_delete_${this.item.reportId}`,
+            buttonWidth: '48%',
+            actionStyle: GlassActionStyle.DANGER,
+            onAction: (): void => { this.onDelete(); }
+          })
         }
         .width('100%')
       }

@@ -1,6 +1,7 @@
 import { uiMaterial } from '@kit.ArkUI';
 import { AsyncStatePanel } from '../../components/common/AsyncStatePanel';
 import { GlassActionButton } from '../../components/common/GlassActionButton';
+import { GlassActionStyle } from '../../components/common/GlassActionButtonModels';
 import { InlineErrorNotice } from '../../components/common/InlineErrorNotice';
 import { ReportSectionCard } from '../../components/report/ReportSectionCard';
 import { DiagnosisReport } from '../../model/DiagnosisModels';
@@ -154,12 +155,13 @@ export struct ReportPage {
           .fontColor(this.palette().secondaryText)
           .maxLines(this.rawTextExpanded ? 20 : 4)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
-        Button(this.rawTextExpanded ? $r('app.string.report_collapse') : $r('app.string.report_expand'))
-          .constraintSize({ minHeight: 44 })
-          .fontColor(this.palette().accent)
-          .onClick((): void => {
-            this.rawTextExpanded = !this.rawTextExpanded;
-          })
+        GlassActionButton({
+          label: this.rawTextExpanded ? $r('app.string.report_collapse') : $r('app.string.report_expand'),
+          buttonId: 'report_raw_text_toggle',
+          compact: true,
+          actionStyle: GlassActionStyle.SECONDARY,
+          onAction: (): void => { this.rawTextExpanded = !this.rawTextExpanded; }
+        })
       }
       .width('100%')
       .alignItems(HorizontalAlign.Start)
@@ -168,25 +170,24 @@ export struct ReportPage {
       .backgroundColor(this.palette().surfaceBackground)
 
       Column({ space: 10 }) {
-        Button(this.viewModel?.saveOperation.status === OperationStatus.LOADING ?
-          $r('app.string.report_saving') : (this.viewModel?.isSaved ?
-          $r('app.string.report_saved') : $r('app.string.report_save')))
-          .id('report_save')
-          .width('100%')
-          .constraintSize({ minHeight: 48 })
-          .enabled(this.viewModel?.saveOperation.status !== OperationStatus.LOADING &&
-            !this.viewModel?.isSaved)
-          .onClick((): void => {
-            this.saveReport();
-          })
+        GlassActionButton({
+          label: this.viewModel?.saveOperation.status === OperationStatus.LOADING ?
+            $r('app.string.report_saving') : (this.viewModel?.isSaved ?
+            $r('app.string.report_saved') : $r('app.string.report_save')),
+          buttonId: 'report_save',
+          actionEnabled: !this.viewModel?.isSaved,
+          loading: this.viewModel?.saveOperation.status === OperationStatus.LOADING,
+          actionStyle: GlassActionStyle.PRIMARY,
+          onAction: (): void => { this.saveReport(); }
+        })
         if (this.viewModel?.isSaved) {
-          Button(report.isFavorite ? '取消收藏' : '收藏报告')
-            .id('report_favorite')
-            .width('100%')
-            .constraintSize({ minHeight: 48 })
-            .fontColor(this.palette().accent)
-            .enabled(this.viewModel.favoriteOperation.status !== OperationStatus.LOADING)
-            .onClick((): void => { this.toggleFavorite(); })
+          GlassActionButton({
+            label: report.isFavorite ? '取消收藏' : '收藏报告',
+            buttonId: 'report_favorite',
+            loading: this.viewModel.favoriteOperation.status === OperationStatus.LOADING,
+            actionStyle: GlassActionStyle.FAVORITE,
+            onAction: (): void => { this.toggleFavorite(); }
+          })
           if (this.viewModel.favoriteOperation.status === OperationStatus.ERROR) {
             InlineErrorNotice({
               message: this.viewModel.favoriteError?.message ?? '收藏状态更新失败，请重试。',
@@ -203,29 +204,25 @@ export struct ReportPage {
           })
         }
         if (this.viewModel?.hasEditableSession) {
-          Button($r('app.string.report_edit_text'))
-            .id('report_edit_text')
-            .width('100%')
-            .constraintSize({ minHeight: 48 })
-            .onClick((): void => {
-              this.editInput();
-            })
-          Button($r('app.string.report_rediagnose'))
-            .id('report_rediagnose')
-            .width('100%')
-            .constraintSize({ minHeight: 48 })
-            .fontColor(this.palette().accent)
-            .onClick((): void => {
-              this.viewModel?.rediagnose();
-            })
-        }
-        Button($r('app.string.route_back_origin'))
-          .width('100%')
-          .constraintSize({ minHeight: 48 })
-          .fontColor(this.palette().secondaryText)
-          .onClick((): void => {
-            this.viewModel?.backToOrigin();
+          GlassActionButton({
+            label: $r('app.string.report_edit_text'),
+            buttonId: 'report_edit_text',
+            actionStyle: GlassActionStyle.PRIMARY,
+            onAction: (): void => { this.editInput(); }
           })
+          GlassActionButton({
+            label: $r('app.string.report_rediagnose'),
+            buttonId: 'report_rediagnose',
+            actionStyle: GlassActionStyle.PRIMARY,
+            onAction: (): void => { this.viewModel?.rediagnose(); }
+          })
+        }
+        GlassActionButton({
+          label: $r('app.string.route_back_origin'),
+          buttonId: 'report_back_origin',
+          actionStyle: GlassActionStyle.SECONDARY,
+          onAction: (): void => { this.viewModel?.backToOrigin(); }
+        })
       }
       .width('100%')
     }

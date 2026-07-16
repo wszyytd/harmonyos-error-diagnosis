@@ -1,4 +1,6 @@
 import { AppStateStore } from '../../store/AppStateStore';
+import { GlassActionButton } from './GlassActionButton';
+import { GlassActionStyle } from './GlassActionButtonModels';
 import {
   getThemePalette,
   ThemePalette
@@ -71,18 +73,20 @@ export struct ConfirmActionDialog {
         .fontColor(this.dangerous ? this.palette().error : this.palette().accent)
         .accessibilityText(this.presentation().dangerLabel)
       Row({ space: 12 }) {
-        Button(this.presentation().cancelLabel)
-          .layoutWeight(1)
-          .constraintSize({ minHeight: 44 })
-          .fontColor(this.palette().primaryText)
-          .accessibilityText($r('app.string.common_confirm_cancel_accessibility'))
-          .onClick(() => this.cancel())
-        Button(this.presentation().confirmLabel)
-          .layoutWeight(1)
-          .constraintSize({ minHeight: 44 })
-          .fontColor(this.dangerous ? this.palette().error : this.palette().accent)
-          .accessibilityText(this.presentation().confirmLabel)
-          .onClick(() => this.confirm())
+        GlassActionButton({
+          label: this.presentation().cancelLabel,
+          buttonId: 'confirm_dialog_cancel',
+          buttonWidth: '47%',
+          actionStyle: GlassActionStyle.SECONDARY,
+          onAction: (): void => { this.cancel(); }
+        })
+        GlassActionButton({
+          label: this.presentation().confirmLabel,
+          buttonId: 'confirm_dialog_confirm',
+          buttonWidth: '47%',
+          actionStyle: this.dangerous ? GlassActionStyle.DANGER : GlassActionStyle.PRIMARY,
+          onAction: (): void => { this.confirm(); }
+        })
       }
       .width('100%')
     }

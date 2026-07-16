@@ -1,5 +1,7 @@
 import { AsyncStatePanel } from '../../components/common/AsyncStatePanel';
 import { ConfirmActionDialog } from '../../components/common/ConfirmActionDialog';
+import { GlassActionButton } from '../../components/common/GlassActionButton';
+import { GlassActionStyle } from '../../components/common/GlassActionButtonModels';
 import { EmptyStateView } from '../../components/common/EmptyStateView';
 import { InlineErrorNotice } from '../../components/common/InlineErrorNotice';
 import { HistoryReportCard } from '../../components/history/HistoryReportCard';
@@ -143,24 +145,29 @@ export struct HistorySettingsPage {
           }
 
           if (this.viewModel !== undefined && !this.viewModel.isHistoryEmpty) {
-            Button('清空全部历史记录')
-              .width('100%')
-              .constraintSize({ minHeight: 48 })
-              .fontColor(this.palette().error)
-              .enabled(this.viewModel.mutationStatus !== OperationStatus.LOADING)
-              .onClick((): void => { this.clearDialogController.open(); })
+            GlassActionButton({
+              label: '清空全部历史记录',
+              buttonId: 'history_settings_clear_all',
+              actionEnabled: this.viewModel.mutationStatus !== OperationStatus.LOADING,
+              actionStyle: GlassActionStyle.DANGER,
+              onAction: (): void => { this.clearDialogController.open(); }
+            })
           }
 
-          Button($r('app.string.route_open_privacy'))
-            .width('100%')
-            .constraintSize({ minHeight: 48 })
-            .onClick(() => this.router.openPrivacy({
-              origin: RouteName.HISTORY_SETTINGS
-            }))
-          Button($r('app.string.route_back_home'))
-            .width('100%')
-            .constraintSize({ minHeight: 48 })
-            .onClick(() => this.router.back())
+          GlassActionButton({
+            label: $r('app.string.route_open_privacy'),
+            buttonId: 'history_open_privacy',
+            actionStyle: GlassActionStyle.SECONDARY,
+            onAction: (): void => {
+              this.router.openPrivacy({ origin: RouteName.HISTORY_SETTINGS });
+            }
+          })
+          GlassActionButton({
+            label: $r('app.string.route_back_home'),
+            buttonId: 'history_back_home',
+            actionStyle: GlassActionStyle.SECONDARY,
+            onAction: (): void => { this.router.back(); }
+          })
         }
         .width('100%')
         .padding({ left: 20, right: 20, top: 20, bottom: 32 })
