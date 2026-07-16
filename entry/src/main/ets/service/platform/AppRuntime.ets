@@ -181,7 +181,12 @@ export function createHistoryViewModel(router: AppRouter): HistoryViewModel {
   if (reportRepository === undefined) {
     throw new Error('HOME_RUNTIME_NOT_CONFIGURED');
   }
-  return new HistoryViewModel(reportRepository, router);
+  return new HistoryViewModel(reportRepository, router, async (): Promise<boolean> => {
+    if (homeViewModel === undefined) {
+      return false;
+    }
+    return homeViewModel.loadRecent();
+  });
 }
 
 function configureHomeRuntime(context: common.UIAbilityContext): void {

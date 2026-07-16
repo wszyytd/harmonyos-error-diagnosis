@@ -15,7 +15,11 @@ export struct HistoryReportCard {
   compact: boolean = true;
   @Prop
   idPrefix: string = 'home_recent_report';
+  @Prop
+  showActions: boolean = false;
   onOpen: () => void = (): void => {};
+  onFavorite: () => void = (): void => {};
+  onDelete: () => void = (): void => {};
 
   private palette(): ThemePalette {
     return getThemePalette(this.appState.effectiveTheme, this.appState.accentTheme);
@@ -55,6 +59,28 @@ export struct HistoryReportCard {
           .fontColor(this.palette().accent)
       }
       .width('100%')
+
+      if (this.showActions) {
+        Row({ space: 10 }) {
+          Button(this.item.isFavorite ? '取消收藏' : '收藏')
+            .layoutWeight(1)
+            .constraintSize({ minHeight: 44 })
+            .fontColor(this.palette().accent)
+            .onClick((event: ClickEvent): void => {
+              event.stopPropagation();
+              this.onFavorite();
+            })
+          Button('删除')
+            .layoutWeight(1)
+            .constraintSize({ minHeight: 44 })
+            .fontColor(this.palette().error)
+            .onClick((event: ClickEvent): void => {
+              event.stopPropagation();
+              this.onDelete();
+            })
+        }
+        .width('100%')
+      }
     }
     .width('100%')
     .constraintSize({ minHeight: 88 })

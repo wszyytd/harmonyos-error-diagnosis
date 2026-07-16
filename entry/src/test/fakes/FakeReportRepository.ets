@@ -66,6 +66,11 @@ export class FakeReportRepository implements ReportRepository {
   favoriteCallCount: number = 0;
   favoriteReportId?: string;
   favoriteValue?: boolean;
+  deleteResult: AppResult<boolean> = createSuccessResult<boolean>(true);
+  deleteCallCount: number = 0;
+  deletedReportId?: string;
+  clearResult: AppResult<number> = createSuccessResult<number>(0);
+  clearCallCount: number = 0;
 
   async getRecent(limit: number): Promise<AppResult<Array<DiagnosisReport>>> {
     this.recentLimit = limit;
@@ -121,7 +126,9 @@ export class FakeReportRepository implements ReportRepository {
   }
 
   async deleteById(reportId: string): Promise<AppResult<boolean>> {
-    return createSuccessResult<boolean>(false);
+    this.deleteCallCount++;
+    this.deletedReportId = reportId;
+    return this.deleteResult;
   }
 
   async updateFavorite(reportId: string, favorite: boolean): Promise<AppResult<boolean>> {
@@ -132,7 +139,8 @@ export class FakeReportRepository implements ReportRepository {
   }
 
   async clearAll(): Promise<AppResult<number>> {
-    return createSuccessResult<number>(0);
+    this.clearCallCount++;
+    return this.clearResult;
   }
 
   async enforceHistoryLimit(limit: number): Promise<AppResult<number>> {
